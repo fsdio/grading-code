@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload Programmer File</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+  <h1>Upload Programmer File</h1>
+  <form action="/upload/programmer" method="POST" enctype="multipart/form-data">
+    <input type="file" name="file" id="file" required>
+    <label for="problem">Problem:</label>
+    <input type="text" id="problem" name="problem" required>
+    <button type="submit">Upload File</button>
+  </form>
+</div>
+</body>
+</html>

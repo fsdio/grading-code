@@ -11,10 +11,17 @@ const app = express();
 const port = 3000;
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Untuk mengurai data form
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const problemsDir = Config.problemsDir(__dirname);
+
+// Middleware untuk logging request
+app.use((req, res, next) => {
+	console.log(`${req.method} request to ${req.path}`);
+	next();
+});
 
 // Setup multer untuk upload file penguji
 const pengujiStorage = multer.diskStorage({
@@ -28,17 +35,8 @@ const pengujiStorage = multer.diskStorage({
 });
 const pengujiUpload = multer({ storage: pengujiStorage });
 
-// Setup multer untuk upload file programmers
-const programmersStorage = multer.diskStorage({
-	destination: (req, file, cb) => {
-		const { problem } = req.body;
-		const programmersDir = path.join(problemsDir, problem, 'programmers');
-		fs.mkdirSync(programmersDir, { recursive: true }); // Membuat direktori jika belum ada
-		cb(null, programmersDir);
-	},
-	filename: (req, file, cb) => cb(null, file.originalname)
-});
-const programmerUpload = multer({ storage: programmersStorage });
+// Setup multer untuk upload file programmers menggunakan memoryStorage
+const programmerUpload = multer({ storage: multer.memoryStorage() });
 
 // Fungsi evaluasi file programmers
 const evaluateProgrammers = async (problemDir, pengujiPath, pengujiTotalPoints) => {
@@ -95,6 +93,8 @@ app.use((req, res, next) => {
 	next();
 });
 
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Endpoint untuk mendapatkan semua hasil evaluasi (penguji)
 app.get('/penguji/:problem', async (req, res) => {
 	const { problem } = req.params;
@@ -133,7 +133,19 @@ app.post('/upload/programmer', programmerUpload.single('file'), (req, res) => {
 		return res.status(400).json({ error: 'Please upload a file' });
 	}
 	
-	evaluatePenguji(problem).then(results => {
+	// Tentukan direktori tujuan setelah mendapatkan nilai problem
+	const programmersDir = path.join(problemsDir, problem, 'programmers');
+	fs.mkdirSync(programmersDir, { recursive: true });
+	const filePath = path.join(programmersDir, file.originalname);
+	
+	// Pindahkan file dari memori ke disk
+	fs.writeFile(filePath, file.buffer, async (err) => {
+		if (err) {
+			return res.status(500).json({ error: 'Failed to save file' });
+		}
+		
+		// Lakukan evaluasi setelah file berhasil disimpan
+		const results = await evaluatePenguji(problem);
 		res.json({ message: 'File uploaded successfully', file, results });
 	});
 });
