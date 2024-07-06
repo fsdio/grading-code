@@ -14,12 +14,12 @@ let Config = {
 	POINT_VARIABLES: 20,
 	POINT_EQUAL_COMPILE: 20,
 	programmersDir: (__dirname) => path.join(__dirname, '../programmers/'),
-	pengujiPath: (__dirname) => path.join(__dirname, '../penguji/example.js')
+	problemsDir: (__dirname) => path.join(__dirname, '../problems/')
 };
 
 const loadConfig = () => {
 	if (fs.existsSync(configFilePath)) {
-		const configData = fs.readFileSync(configFilePath, 'utf-8');
+		const configData = fs.readFileSync(configFilePath, 'utf-8'); // Gunakan 'utf-8' sebagai opsi enkoding
 		Object.assign(Config, JSON.parse(configData));
 	}
 };
