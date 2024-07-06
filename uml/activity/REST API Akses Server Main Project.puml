@@ -1,0 +1,33 @@
+@startuml
+|Penguji|
+start
+:Menjalankan Server
+Main Project;
+|Main Project|
+:Melakukan **middleware** loggin
+**request** untuk mengetahui aksi
+apa saja yang dilakukan;
+:Mampu melakukan **request**
+upload file JavaScript
+ke server;
+|Programmer|
+:Upload file kode sumber
+programmer yang akan dinilai;
+|Main Project|
+:Mampu melakukan **request**
+semua data hasil penilaian;
+|Penguji|
+:Request semua data
+penilaian ke server;
+|Main Project|
+:Mampu melakukan **request**
+data hasil penilaian
+berdasarkan nama file
+yang dikirimkan;
+|Programmer|
+:Request data penilaian
+ke server berdasarkan
+nama file yang programer
+kirimkan;
+stop
+@enduml

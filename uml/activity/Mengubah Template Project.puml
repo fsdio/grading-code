@@ -1,0 +1,12 @@
+@startuml
+|Penguji|
+start
+:Mengubah Kode Sumber Template;
+|Main Project|
+:Menyimpan Kode Sumber Penguji;
+|Penguji|
+:Memberi point penilaian;
+|Main Project|
+:Menyimpan point penilaian;
+stop
+@enduml

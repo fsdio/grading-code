@@ -1,0 +1,24 @@
+@startuml
+|Grading Genius|
+start
+:Mendeteksi mengetahui kode sumber melakukan plagiat;
+:Mendeteksi nama variabel, function, dan class;
+  while (Spesifikasi ada?)
+    if (function?) is (yes) then
+      :save point;
+    elseif (variabel) (yes) then
+      :save point;
+    elseif (class) (yes) then
+      :save point;
+    endif
+  endwhile
+  :Mendeteksi kesesuaian hasil compiler penguji dan programmer;
+  if (Hasil compiler sama?) is (yes) then
+    :save point;
+  else (no)
+    :point 0;
+  endif
+|Main Project|
+:Mengambil hasil evaluasi dari library grading genius;
+stop
+@enduml
