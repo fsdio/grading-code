@@ -26,10 +26,6 @@ class CodeEvaluator {
 		const referenceSpec = this.analyzer.getSpecificationsFromCode(referenceFilePath);
 		const { functionNames = [], classNames = [], variableNames = [] } = spec;
 		
-		// Baca file
-		const referenceCode = fs.readFileSync(referenceFilePath, 'utf-8');
-		const evaluatedCode = fs.readFileSync(filePathToEvaluate, 'utf-8');
-		
 		// Cek kesamaan dengan kode programmer lain
 		const files = await fs.promises.readdir(Config.programmersDir(path.dirname(filePathToEvaluate)));
 		for (const file of files) {
@@ -59,7 +55,7 @@ class CodeEvaluator {
 		const classMatches = this.countMatches(classNames, referenceSpec.classNames);
 		const variableMatches = this.countMatches(variableNames, referenceSpec.variableNames);
 		
-		// Hitung poin
+		// Hitung point
 		let functionPoints = functionMatches * Config.POINT_FUNCTION;
 		let classPoints = classMatches * Config.POINT_CLASS;
 		let variablePoints = variableMatches * Config.POINT_VARIABLES;

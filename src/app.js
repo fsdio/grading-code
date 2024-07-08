@@ -1,17 +1,17 @@
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import {fileURLToPath} from 'url';
 import multer from 'multer';
 import os from 'os';
-import { CodeEvaluator } from './code-evaluator.js';
-import { Config, getConfig, setConfig } from './config.js';
+import {CodeEvaluator} from './code-evaluator.js';
+import {Config, getConfig, setConfig} from './config.js';
 
 const app = express();
 const port = 3000;
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); // Untuk mengurai data form
+app.use(express.urlencoded({ extended: true }));
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,22 +23,25 @@ app.use((req, res, next) => {
 	next();
 });
 
-// Setup multer untuk upload file penguji
+const createProblemDirectory = () => {
+	const problemKey = `problem${Date.now()}`;
+	const problemDir = path.join(problemsDir, problemKey, 'penguji');
+	fs.mkdirSync(problemDir, { recursive: true });
+	return { problemKey, problemDir };
+};
+
 const pengujiStorage = multer.diskStorage({
 	destination: (req, file, cb) => {
-		const problemKey = `problem${Date.now()}`;
-		const problemDir = path.join(problemsDir, problemKey, 'penguji');
-		fs.mkdirSync(problemDir, { recursive: true });
+		const { problemKey, problemDir } = createProblemDirectory();
+		req.problemKey = problemKey; // Attach problemKey to the request object
 		cb(null, problemDir);
 	},
 	filename: (req, file, cb) => cb(null, file.originalname)
 });
-const pengujiUpload = multer({ storage: pengujiStorage });
 
-// Setup multer untuk upload file programmers menggunakan memoryStorage
+const pengujiUpload = multer({ storage: pengujiStorage });
 const programmerUpload = multer({ storage: multer.memoryStorage() });
 
-// Fungsi evaluasi file programmers
 const evaluateProgrammers = async (problemDir, pengujiPath, pengujiTotalPoints) => {
 	const programmersDir = path.join(problemDir, 'programmers');
 	let results = [];
@@ -69,7 +72,6 @@ const evaluateProgrammers = async (problemDir, pengujiPath, pengujiTotalPoints) 
 	return results;
 };
 
-// Fungsi evaluasi penguji
 const evaluatePenguji = async (problem) => {
 	const problemDir = path.join(problemsDir, problem);
 	try {
@@ -77,7 +79,7 @@ const evaluatePenguji = async (problem) => {
 		const evaluatorPenguji = new CodeEvaluator(pengujiPath, pengujiPath);
 		
 		const resultPenguji = await evaluatorPenguji.evaluatePenguji();
-		const pengujiTotalPoints = resultPenguji.points.totalPoints; // Definisi pengujiTotalPoints di sini
+		const pengujiTotalPoints = resultPenguji.points.totalPoints;
 		
 		console.log('Penguji Evaluation Result:', JSON.stringify(resultPenguji, null, 2));
 		
@@ -87,22 +89,32 @@ const evaluatePenguji = async (problem) => {
 	}
 };
 
-// Middleware untuk logging request
-app.use((req, res, next) => {
-	console.log(`${req.method} request to ${req.path}`);
-	next();
-});
+const getAllProblemKeys = () => {
+	try {
+		return fs.readdirSync(problemsDir).filter(file => fs.statSync(path.join(problemsDir, file)).isDirectory());
+	} catch (err) {
+		console.error('Error reading the problems directory:', err);
+		return [];
+	}
+};
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Endpoint untuk mendapatkan semua hasil evaluasi (penguji)
 app.get('/penguji/:problem', async (req, res) => {
 	const { problem } = req.params;
 	const results = await evaluatePenguji(problem);
 	res.json(results);
 });
 
-// Endpoint untuk mendapatkan hasil evaluasi berdasarkan nama file (programmers)
+app.get('/problems', (req, res) => {
+	const problemKeys = getAllProblemKeys();
+	if (problemKeys.length > 0) {
+		res.json(problemKeys);
+	} else {
+		res.status(404).json({ error: 'No problems found' });
+	}
+});
+
 app.get('/programmers/:problem/:fileName', async (req, res) => {
 	const { problem, fileName } = req.params;
 	const results = await evaluatePenguji(problem);
@@ -114,18 +126,16 @@ app.get('/programmers/:problem/:fileName', async (req, res) => {
 	}
 });
 
-// Endpoint untuk upload file penguji
 app.post('/upload/penguji', pengujiUpload.single('file'), (req, res) => {
 	const { file } = req;
 	if (!file) {
 		return res.status(400).json({ error: 'Please upload a file' });
 	}
 	
-	const problemKey = path.basename(path.dirname(file.path)); // Mendapatkan problemKey dari path direktori
+	const problemKey = req.problemKey; // Retrieve problemKey from the request object
 	res.json({ message: 'File uploaded successfully', file, problemKey });
 });
 
-// Endpoint untuk upload file JavaScript baru (programmers)
 app.post('/upload/programmer', programmerUpload.single('file'), (req, res) => {
 	const { problem } = req.body;
 	const file = req.file;
@@ -150,19 +160,16 @@ app.post('/upload/programmer', programmerUpload.single('file'), (req, res) => {
 	});
 });
 
-// Endpoint untuk mengubah nilai point pada config.js
 app.post('/config', (req, res) => {
 	const newConfig = req.body;
 	setConfig(newConfig);
 	res.json({ message: 'Configuration updated successfully', newConfig: getConfig() });
 });
 
-// Endpoint untuk mendapatkan nilai point saat ini
 app.get('/config', (req, res) => {
 	res.json(getConfig());
 });
 
-// Fungsi untuk mendapatkan alamat IP lokal
 const getLocalIpAddress = () => {
 	const interfaces = os.networkInterfaces();
 	for (const interfaceName of Object.keys(interfaces)) {

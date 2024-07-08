@@ -19,10 +19,18 @@ let Config = {
 
 const loadConfig = () => {
 	if (fs.existsSync(configFilePath)) {
-		const configData = fs.readFileSync(configFilePath, 'utf-8'); // Gunakan 'utf-8' sebagai opsi enkoding
-		Object.assign(Config, JSON.parse(configData));
+		const configData = fs.readFileSync(configFilePath, 'utf-8');
+		const parsedConfig = JSON.parse(configData);
+		
+		// Konversi nilai POINT_EQUAL_COMPILE ke tipe data number jika dibaca sebagai string
+		if (typeof parsedConfig.POINT_EQUAL_COMPILE === 'string') {
+			parsedConfig.POINT_EQUAL_COMPILE = parseInt(parsedConfig.POINT_EQUAL_COMPILE, 10);
+		}
+		
+		Object.assign(Config, parsedConfig);
 	}
 };
+
 
 const saveConfig = () => {
 	const configData = JSON.stringify(Config, null, 2);

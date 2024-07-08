@@ -3,16 +3,266 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Penguji File</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Halaman Penguji</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 150vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #problemContainer {
+            text-align: left;
+            margin-top: 20px;
+        }
+
+        #problemContainer h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        #problemContainer ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #problemContainer li {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #problemContainer li:hover {
+            background-color: #e9e9e9;
+        }
+
+        #problemContainer p {
+            color: #666;
+            font-style: italic;
+        }
+
+        #configForm {
+            margin-top: 20px;
+        }
+
+        #configForm label {
+            margin-bottom: 5px;
+            color: #333;
+            display: block;
+            text-align: left;
+        }
+
+        #configForm input[type="number"] {
+            margin-bottom: 10px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        #configForm button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #configForm button:hover {
+            background-color: #0056b3;
+        }
+
+        #currentConfig {
+            text-align: left;
+            margin-top: 20px;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+        }
+
+        #currentConfig h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        #currentConfig p {
+            margin-bottom: 5px;
+            color: #666;
+        }
+    </style>
 </head>
 <body>
 <div class="container">
     <h1>Upload Penguji File</h1>
-    <form action="/upload/penguji" method="POST" enctype="multipart/form-data">
+    <form id="uploadForm" action="/upload/penguji" method="POST" enctype="multipart/form-data">
         <input type="file" name="file" id="file" required>
         <button type="submit">Upload File</button>
     </form>
+    <div id="problemContainer"></div>
+
+    <form id="configForm" action="/config" method="POST">
+        <label for="functionPoints">Function Points:</label>
+        <input type="number" id="functionPoints" name="functionPoints" value="100" required>
+        <br>
+        <label for="classPoints">Class Points:</label>
+        <input type="number" id="classPoints" name="classPoints" value="100" required>
+        <br>
+        <label for="variablePoints">Variables Points:</label>
+        <input type="number" id="variablePoints" name="variablePoints" value="100" required>
+        <br>
+        <label for="equalCompilePoints">Equal Compile Points:</label>
+        <input type="number" id="equalCompilePoints" name="equalCompilePoints" value="100" required>
+        <br>
+        <button type="submit">Submit</button>
+    </form>
+    <div id="currentConfig"></div>
 </div>
+
+<script>
+	document.getElementById('uploadForm').addEventListener('submit', async (event) => {
+		event.preventDefault();
+		const formData = new FormData(event.target);
+		try {
+			const response = await fetch(event.target.action, {
+				method: 'POST',
+				body: formData
+			});
+			const result = await response.json();
+			console.log('Upload result:', result);
+			alert('File uploaded successfully');
+		} catch (error) {
+			console.error('Error uploading file:', error);
+			alert('Error uploading file');
+		}
+	});
+
+	async function fetchProblems() {
+		try {
+			const response = await fetch('/problems');
+			const problems = await response.json();
+			displayProblems(problems);
+		} catch (error) {
+			console.error('Error fetching problems:', error);
+		}
+	}
+
+	function displayProblems(problems) {
+		const problemContainer = document.getElementById('problemContainer');
+		if (problems.length === 0) {
+			problemContainer.innerHTML = `<p>Not found problems data</p>`;
+		} else {
+			problemContainer.innerHTML = `
+                <h2>Available Problems</h2>
+                <ul>
+                    ${problems.map(problem => `<li onclick="location.href='/problem.html?problem=${problem}'">${problem}</li>`).join('')}
+                </ul>
+            `;
+		}
+	}
+	fetchProblems();
+	async function fetchConfig() {
+		try {
+			const response = await fetch('/config');
+			const config = await response.json();
+			displayConfig(config);
+		} catch (error) {
+			console.error('Error fetching configuration:', error);
+		}
+	}
+	function displayConfig(config) {
+		const currentConfig = document.getElementById('currentConfig');
+		currentConfig.innerHTML = `
+            <h2>Current Configuration</h2>
+            <p>Function Points: ${config.POINT_FUNCTION}</p>
+            <p>Class Points: ${config.POINT_CLASS}</p>
+            <p>Variables Points: ${config.POINT_VARIABLES}</p>
+            <p>Equal Compile Points: ${config.POINT_EQUAL_COMPILE}</p>
+        `;
+	}
+	document.getElementById('configForm').addEventListener('submit', async (event) => {
+		event.preventDefault();
+		const formData = new FormData(event.target);
+		const configData = {
+			POINT_FUNCTION: formData.get('functionPoints'),
+			POINT_CLASS: formData.get('classPoints'),
+			POINT_VARIABLES: formData.get('variablePoints'),
+			POINT_EQUAL_COMPILE: formData.get('equalCompilePoints')
+		};
+
+		try {
+			const response = await fetch(event.target.action, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(configData)
+			});
+			const result = await response.json();
+			console.log('Configuration updated:', result);
+			alert('Configuration updated successfully');
+			await fetchConfig();
+		} catch (error) {
+			console.error('Error updating configuration:', error);
+			alert('Error updating configuration');
+		}
+	});
+	fetchConfig();
+</script>
 </body>
 </html>

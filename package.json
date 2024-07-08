@@ -1,8 +1,11 @@
 {
   "name": "project-evaluated",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "cleaned-package": "node clean-unused-deps.js",
+    "start": "node ./src/app.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
