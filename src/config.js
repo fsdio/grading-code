@@ -39,10 +39,10 @@ const saveConfig = () => {
 
 // Fungsi untuk mengubah nilai point
 const setConfig = (newConfig) => {
-	if (newConfig.POINT_FUNCTION !== undefined) Config.POINT_FUNCTION = newConfig.POINT_FUNCTION;
-	if (newConfig.POINT_CLASS !== undefined) Config.POINT_CLASS = newConfig.POINT_CLASS;
-	if (newConfig.POINT_VARIABLES !== undefined) Config.POINT_VARIABLES = newConfig.POINT_VARIABLES;
-	if (newConfig.POINT_EQUAL_COMPILE !== undefined) Config.POINT_EQUAL_COMPILE = newConfig.POINT_EQUAL_COMPILE;
+	if (newConfig.POINT_FUNCTION !== undefined) Config.POINT_FUNCTION = parseInt(newConfig.POINT_FUNCTION);
+	if (newConfig.POINT_CLASS !== undefined) Config.POINT_CLASS = parseInt(newConfig.POINT_CLASS);
+	if (newConfig.POINT_VARIABLES !== undefined) Config.POINT_VARIABLES = parseInt(newConfig.POINT_VARIABLES);
+	if (newConfig.POINT_EQUAL_COMPILE !== undefined) Config.POINT_EQUAL_COMPILE = parseInt(newConfig.POINT_EQUAL_COMPILE);
 	saveConfig();
 };
 

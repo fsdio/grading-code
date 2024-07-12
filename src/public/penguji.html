@@ -157,16 +157,16 @@
     <div id="problemContainer"></div>
 
     <form id="configForm" action="/config" method="POST">
-        <label for="functionPoints">Function Points:</label>
+        <label for="functionPoints">Function Score:</label>
         <input type="number" id="functionPoints" name="functionPoints" value="100" required>
         <br>
-        <label for="classPoints">Class Points:</label>
+        <label for="classPoints">Class Score:</label>
         <input type="number" id="classPoints" name="classPoints" value="100" required>
         <br>
-        <label for="variablePoints">Variables Points:</label>
+        <label for="variablePoints">Variables Score:</label>
         <input type="number" id="variablePoints" name="variablePoints" value="100" required>
         <br>
-        <label for="equalCompilePoints">Equal Compile Points:</label>
+        <label for="equalCompilePoints">Equal Compile Score:</label>
         <input type="number" id="equalCompilePoints" name="equalCompilePoints" value="100" required>
         <br>
         <button type="submit">Submit</button>
@@ -229,10 +229,10 @@
 		const currentConfig = document.getElementById('currentConfig');
 		currentConfig.innerHTML = `
             <h2>Current Configuration</h2>
-            <p>Function Points: ${config.POINT_FUNCTION}</p>
-            <p>Class Points: ${config.POINT_CLASS}</p>
-            <p>Variables Points: ${config.POINT_VARIABLES}</p>
-            <p>Equal Compile Points: ${config.POINT_EQUAL_COMPILE}</p>
+            <p>Function Score: ${config.POINT_FUNCTION}</p>
+            <p>Class Score: ${config.POINT_CLASS}</p>
+            <p>Variables Score: ${config.POINT_VARIABLES}</p>
+            <p>Equal Compile Score: ${config.POINT_EQUAL_COMPILE}</p>
         `;
 	}
 	document.getElementById('configForm').addEventListener('submit', async (event) => {

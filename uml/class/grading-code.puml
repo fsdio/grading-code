@@ -1,0 +1,58 @@
+@startuml
+left to right direction
+
+class grading-code.CodeEvaluator {
+  - analyzer: CodeAnalyzer
+  - filePathPenguji: String
+  - filePathProgrammers: String
+  - evaluationResult: Object
+  + evaluateProgrammer(): Object
+  + evaluatePenguji(): Object
+  + evaluate(filePathToEvaluate: String, referenceFilePath: String, isPenguji: Boolean): Object
+  + countMatches(arr1: Array, arr2: Array): int
+  + createSpec(result: Object): Object
+  + calculatePercentage(totalPointsPenguji: int, totalPointsProgrammers: int): int
+}
+
+class grading-code.Config {
+  + POINT_FUNCTION: int
+  + POINT_CLASS: int
+  + POINT_VARIABLES: int
+  + POINT_EQUAL_COMPILE: int
+  + programmersDir(__dirname: String): String
+  + problemsDir(__dirname: String): String
+  + loadConfig(): void
+  + saveConfig(): void
+  + setConfig(newConfig: Object): void
+  + getConfig(): Object
+}
+
+class grading-genius.CodeAnalyzer {
+  + getSpecificationsFromCode(filePath: String): Object
+  + compareFileOutputs(referenceFilePath: String, filePath: String): Object
+  + getCheckEqualCode(filePath1: String, filePath2: String): Boolean
+}
+
+class grading-code.fs.FileSystem {
+  + fs.promises.readdir(dir: String): Array
+  + fs.mkdirSync(dir: String, options: Object): void
+  + fs.writeFileSync(filePath: String, data: String): void
+  + fs.readFileSync(filePath: String, encoding: String): String
+  + fs.existsSync(path: String): Boolean
+  + fs.statSync(path: String): Object
+}
+
+class grading-code.path.Path {
+  + path.join(...paths: String): String
+  + path.extname(file: String): String
+  + path.dirname(file: String): String
+}
+
+class grading-code.url.Url {
+  + fileURLToPath(url: String): String
+}
+
+class grading-code.os.OS {
+  + os.networkInterfaces(): Object
+}
+@enduml

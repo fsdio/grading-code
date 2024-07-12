@@ -1,22 +1,51 @@
 @startuml
-'https://plantuml.com/use-case-diagram
+left to right direction
+'actor
+actor Penguji
+actor Programmer
 
-:Main Admin: as Admin
-(Use the application) as (Use)
+'case
+usecase "Mendeteksi\nketersediaan spesifikasi" as (SKPL-GG-01)
+usecase "Mendeteksi kesesuaian\nhasil compiler" as (SKPL-GG-02)
+usecase "Mendeteksi\nplagiat kode sumber" as (SKPL-GG-03)
 
-User -> (Start)
-User --> (Use)
+usecase "Penilaian terhadap\nkode sumber" as (SKPL-MP-01)
+usecase "Memanipulasi score" as (SKPL-MP-01-01)
+usecase "Hasil pemeriksaan library\ngrading-genius" as (SKPL-MP-01-02)
+usecase "Membaca file\nkode sumber" as (SKPL-MP-01-03)
+usecase "Mengecek kesesuaian\nspesifikasi" as (SKPL-MP-01-04)
+usecase "Hitung penilaian dari\nhasil pemeriksaan\ndengan score" as (SKPL-MP-01-05)
+usecase "Memeriksa plagiat kode sumber" as (SKPL-MP-01-06)
+usecase "Mengambil penilaian secara\nlangsung dari kode sumber" as (SKPL-MP-01-07)
 
-Admin ---> (Use)
+usecase "Rancangan REST API dan WEB" as (SKPL-MP-02)
+usecase "Middleware saat melakukan logging" as (SKPL-MP-02-01)
+usecase "Mengambil semua data\npenilaian hasil evaluasi" as (SKPL-MP-02-02)
+usecase "Mengambil data penilaian\nhasil evaluasi berdasarkan\nnama file" as (SKPL-MP-02-03)
+usecase "Mengupload file JavaScript" as (SKPL-MP-02-04)
+usecase "Mengubah nilai score" as (SKPL-MP-02-05)
 
-note right of Admin : This is an example.
+Penguji -> (SKPL-MP-01)
+(SKPL-MP-01-01) ..> (SKPL-MP-01) : <<extend>>
+(SKPL-MP-01) ..> (SKPL-MP-01-02) : <<include>>
 
-note right of (Use)
-A note can also
-be on several lines
-end note
+(SKPL-MP-01-02) ..> (SKPL-GG-01) : <<include>>
+(SKPL-MP-01-02) ..> (SKPL-GG-02) : <<include>>
+(SKPL-MP-01-02) ..> (SKPL-GG-03) : <<include>>
 
-note "This note is connected\nto several objects." as N2
-(Start) .. N2
-N2 .. (Use)
+(SKPL-MP-01) ..> (SKPL-MP-01-03) : <<include>>
+(SKPL-MP-01) ..> (SKPL-MP-01-04) : <<include>>
+(SKPL-MP-01) ..> (SKPL-MP-01-05) : <<include>>
+(SKPL-MP-01) ..> (SKPL-MP-01-06) : <<include>>
+(SKPL-MP-01) ..> (SKPL-MP-01-07) : <<include>>
+
+Penguji -> (SKPL-MP-02)
+(SKPL-MP-02) ..> (SKPL-MP-02-01) : <<include>>
+(SKPL-MP-02-02) ..> (SKPL-MP-02) : <<extend>>
+(SKPL-MP-02-03) ..> (SKPL-MP-02) : <<extend>>
+(SKPL-MP-02) ..> (SKPL-MP-02-04) : <<include>>
+(SKPL-MP-02-05) ..> (SKPL-MP-02) : <<extend>>
+
+Programmer --> (SKPL-MP-02-03)
+Programmer --> (SKPL-MP-02-04)
 @enduml

@@ -119,7 +119,6 @@
       displayFileDetails(result);
     } catch (error) {
       console.error('Error uploading file:', error);
-      alert('Error uploading file');
     }
   });
 
@@ -137,13 +136,13 @@
       <ul>${classes.map(cls => `<li>${cls}</li>`).join('')}</ul>
       <p><strong>Variables:</strong></p>
       <ul>${variables.map(variable => `<li>${variable}</li>`).join('')}</ul>
-      <p><strong>Points:</strong></p>
+      <p><strong>Score:</strong></p>
       <ul>
-        <li>Function Points: ${points.functionPoints}</li>
-        <li>Class Points: ${points.classPoints}</li>
-        <li>Variable Points: ${points.variablePoints}</li>
-        <li>Equal Compile Points: ${points.equalCompilePoints}</li>
-        <li>Total Points: ${points.totalPoints}</li>
+        <li>Function Score: ${points.functionPoints}</li>
+        <li>Class Score: ${points.classPoints}</li>
+        <li>Variable Score: ${points.variablePoints}</li>
+        <li>Equal Compile Score: ${points.equalCompilePoints}</li>
+        <li>Total Score: ${points.totalPoints}</li>
       </ul>
       <p><strong>Percentage Actuals:</strong> ${percentageActuals}%</p>
     `;

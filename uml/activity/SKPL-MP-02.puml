@@ -1,0 +1,27 @@
+@startuml
+start
+:Penguji/Programmer mengakses sistem;
+:Penguji/Programmer memilih opsi untuk merancang REST API dan WEB;
+:Melakukan perancangan;
+if (Mampu melakukan pada use case ID (SKPL-MP-02-01)?) then (yes)
+  :Middleware saat melakukan logging;
+endif
+if (Mampu melakukan pada use case ID (SKPL-MP-02-02)?) then (yes)
+  :Mengambil semua data penilaian hasil evaluasi;
+endif
+if (Mampu melakukan pada use case ID (SKPL-MP-02-03)?) then (yes)
+  :Mengambil data penilaian hasil evaluasi berdasarkan nama file;
+endif
+if (Mampu melakukan pada use case ID (SKPL-MP-02-04)?) then (yes)
+  :Mengupload file JavaScript;
+endif
+if (Mampu melakukan pada use case ID (SKPL-MP-02-05)?) then (yes)
+  :Mengubah nilai score;
+endif
+if (REST API atau WEB dapat digunakan?) then (yes)
+  :Tampilkan hasil perancangan;
+else (no)
+  :Tampilkan pesan kesalahan;
+endif
+stop
+@enduml

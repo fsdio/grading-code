@@ -1,0 +1,34 @@
+@startuml
+actor Penguji
+participant Sistem
+
+Penguji -> Sistem: Mengakses sistem
+Penguji -> Sistem: Memilih opsi untuk menilai kode sumber
+Sistem -> Sistem: Melakukan pengecekan dan penilaian
+alt Mampu melakukan pada use case ID (SKPL-MP-01-01)
+    Sistem -> Sistem: Memanipulasi score
+end
+alt Mampu melakukan pada use case ID (SKPL-MP-01-02)
+    Sistem -> Sistem: Mengambil hasil pemeriksaan library grading-genius
+end
+alt Mampu melakukan pada use case ID (SKPL-MP-01-03)
+    Sistem -> Sistem: Membaca file kode sumber
+end
+alt Mampu melakukan pada use case ID (SKPL-MP-01-04)
+    Sistem -> Sistem: Mengecek kesesuaian spesifikasi
+end
+alt Mampu melakukan pada use case ID (SKPL-MP-01-05)
+    Sistem -> Sistem: Hitung penilaian dari hasil pemeriksaan dengan score
+end
+alt Mampu melakukan pada use case ID (SKPL-MP-01-06)
+    Sistem -> Sistem: Memeriksa plagiat kode sumber
+end
+alt Mampu melakukan pada use case ID (SKPL-MP-01-07)
+    Sistem -> Sistem: Mengambil penilaian langsung dari kode sumber
+end
+alt Hasil penilaian dapat ditampilkan
+    Sistem -> Penguji: Tampilkan hasil penilaian
+else
+    Sistem -> Penguji: Tampilkan pesan kesalahan
+end
+@enduml

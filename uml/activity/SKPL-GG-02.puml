@@ -1,0 +1,14 @@
+@startuml
+start
+:Penguji mengakses sistem;
+:Penguji memilih opsi untuk mendeteksi hasil compiler;
+:Jalankan kode sumber di virtual environment;
+:Hashing hasil compiler ke Buffer base64;
+:Periksa kesamaan dengan hasil kode sumber penguji;
+if (Data pemeriksaan spesifikasi kosong?) then (yes)
+  :Tampilkan pesan kesalahan;
+else (no)
+  :Tampilkan hasil pemeriksaan kesesuaian compiler;
+endif
+stop
+@enduml

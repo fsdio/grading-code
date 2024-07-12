@@ -1,0 +1,13 @@
+@startuml
+start
+:Penguji mengakses sistem;
+:Penguji memilih opsi untuk mendeteksi plagiat;
+:Ubah semua kode sumber ke buffer;
+:Periksa plagiat kode sumber;
+if (Data pemeriksaan spesifikasi kosong?) then (yes)
+  :Tampilkan pesan kesalahan;
+else (no)
+  :Tampilkan hasil pemeriksaan plagiat;
+endif
+stop
+@enduml

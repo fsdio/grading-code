@@ -1,0 +1,33 @@
+@startuml
+start
+:Penguji mengakses sistem;
+:Penguji memilih opsi untuk menilai kode sumber;
+:Melakukan pengecekan dan penilaian;
+if (Mampu melakukan pada use case ID (SKPL-MP-01-01)?) then (yes)
+  :Memanipulasi score;
+endif
+if (Mampu melakukan pada use case ID (SKPL-MP-01-02)?) then (yes)
+  :Mengambil hasil pemeriksaan library grading-genius;
+endif
+if (Mampu melakukan pada use case ID (SKPL-MP-01-03)?) then (yes)
+  :Membaca file kode sumber;
+endif
+if (Mampu melakukan pada use case ID (SKPL-MP-01-04)?) then (yes)
+  :Mengecek kesesuaian spesifikasi;
+endif
+if (Mampu melakukan pada use case ID (SKPL-MP-01-05)?) then (yes)
+  :Hitung penilaian dari hasil pemeriksaan dengan score;
+endif
+if (Mampu melakukan pada use case ID (SKPL-MP-01-06)?) then (yes)
+  :Memeriksa plagiat kode sumber;
+endif
+if (Mampu melakukan pada use case ID (SKPL-MP-01-07)?) then (yes)
+  :Mengambil penilaian langsung dari kode sumber;
+endif
+if (Hasil penilaian dapat ditampilkan?) then (yes)
+  :Tampilkan hasil penilaian;
+else (no)
+  :Tampilkan pesan kesalahan;
+endif
+stop
+@enduml

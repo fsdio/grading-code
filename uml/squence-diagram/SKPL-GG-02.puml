@@ -1,0 +1,15 @@
+@startuml
+actor Penguji
+participant Sistem
+
+Penguji -> Sistem: Mengakses sistem
+Penguji -> Sistem: Memilih opsi untuk mendeteksi hasil compiler
+Sistem -> Sistem: Jalankan kode sumber di virtual environment
+Sistem -> Sistem: Hashing hasil compiler ke Buffer base64
+Sistem -> Sistem: Periksa kesamaan dengan hasil kode sumber penguji
+alt Data pemeriksaan spesifikasi kosong
+    Sistem -> Penguji: Tampilkan pesan kesalahan
+else
+    Sistem -> Penguji: Tampilkan hasil pemeriksaan kesesuaian compiler
+end
+@enduml

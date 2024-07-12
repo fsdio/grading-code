@@ -131,39 +131,49 @@ app.post('/upload/penguji', pengujiUpload.single('file'), (req, res) => {
 	if (!file) {
 		return res.status(400).json({ error: 'Please upload a file' });
 	}
+	const problemKey = req.problemKey;
+	const programmersDir = path.join(problemsDir, problemKey, 'programmers');
+	fs.mkdirSync(programmersDir, { recursive: true });
 	
-	const problemKey = req.problemKey; // Retrieve problemKey from the request object
+	// Pastikan untuk mengembalikan respons setelah file berhasil diunggah
 	res.json({ message: 'File uploaded successfully', file, problemKey });
 });
 
-app.post('/upload/programmer', programmerUpload.single('file'), (req, res) => {
+app.post('/upload/programmer', programmerUpload.single('file'), async (req, res) => {
 	const { problem } = req.body;
 	const file = req.file;
 	if (!file) {
 		return res.status(400).json({ error: 'Please upload a file' });
 	}
-	
-	// Tentukan direktori tujuan setelah mendapatkan nilai problem
 	const programmersDir = path.join(problemsDir, problem, 'programmers');
 	fs.mkdirSync(programmersDir, { recursive: true });
 	const filePath = path.join(programmersDir, file.originalname);
-	
-	// Pindahkan file dari memori ke disk
 	fs.writeFile(filePath, file.buffer, async (err) => {
 		if (err) {
+			console.error('Failed to save file:', err);
 			return res.status(500).json({ error: 'Failed to save file' });
 		}
-		
-		// Lakukan evaluasi setelah file berhasil disimpan
-		const results = await evaluatePenguji(problem);
-		res.json({ message: 'File uploaded successfully', file, results });
+		try {
+			const results = await evaluatePenguji(problem);
+			res.json({ message: 'File uploaded successfully', file, results });
+		} catch (error) {
+			console.error('Error evaluating penguji after upload:', error);
+			res.status(500).json({ error: 'Error evaluating penguji after upload' });
+		}
 	});
 });
+
 
 app.post('/config', (req, res) => {
 	const newConfig = req.body;
 	setConfig(newConfig);
-	res.json({ message: 'Configuration updated successfully', newConfig: getConfig() });
+	const updatedConfig = getConfig(); // Mengambil konfigurasi terbaru setelah diperbarui
+	const totalPoints = parseInt(updatedConfig.POINT_FUNCTION) + parseInt(updatedConfig.POINT_CLASS) + parseInt(updatedConfig.POINT_VARIABLES) + parseInt(updatedConfig.POINT_EQUAL_COMPILE); // Menghitung total poin
+	res.json({
+		message: 'Configuration updated successfully',
+		newConfig: updatedConfig,
+		totalPoints: totalPoints
+	});
 });
 
 app.get('/config', (req, res) => {

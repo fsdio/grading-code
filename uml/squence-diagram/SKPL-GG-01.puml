@@ -1,0 +1,16 @@
+@startuml
+actor Penguji
+participant Sistem
+
+Penguji -> Sistem: Mengakses sistem
+Penguji -> Sistem: Memilih opsi untuk mendeteksi spesifikasi
+Sistem -> Sistem: Ambil path file kode sumber
+Sistem -> Sistem: Ubah kode sumber ke Buffer
+Sistem -> Sistem: Buat token dari kode sumber
+Sistem -> Sistem: Periksa node type sesuai dengan spesifikasi
+alt Data pemeriksaan spesifikasi kosong
+    Sistem -> Penguji: Tampilkan pesan kesalahan
+else
+    Sistem -> Penguji: Tampilkan hasil pemeriksaan spesifikasi
+end
+@enduml
