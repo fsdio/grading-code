@@ -1,13 +1,10 @@
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-
 // Mengganti __dirname dengan teknik yang sesuai untuk modul ES
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 const configFilePath = path.join(__dirname, 'config.json');
-
 let Config = {
 	POINT_FUNCTION: 20,
 	POINT_CLASS: 20,
@@ -16,7 +13,6 @@ let Config = {
 	programmersDir: (__dirname) => path.join(__dirname, '../programmers/'),
 	problemsDir: (__dirname) => path.join(__dirname, '../problems/')
 };
-
 const loadConfig = () => {
 	if (fs.existsSync(configFilePath)) {
 		const configData = fs.readFileSync(configFilePath, 'utf-8');
@@ -30,13 +26,10 @@ const loadConfig = () => {
 		Object.assign(Config, parsedConfig);
 	}
 };
-
-
 const saveConfig = () => {
 	const configData = JSON.stringify(Config, null, 2);
 	fs.writeFileSync(configFilePath, configData);
 };
-
 // Fungsi untuk mengubah nilai point
 const setConfig = (newConfig) => {
 	if (newConfig.POINT_FUNCTION !== undefined) Config.POINT_FUNCTION = parseInt(newConfig.POINT_FUNCTION);
@@ -45,10 +38,7 @@ const setConfig = (newConfig) => {
 	if (newConfig.POINT_EQUAL_COMPILE !== undefined) Config.POINT_EQUAL_COMPILE = parseInt(newConfig.POINT_EQUAL_COMPILE);
 	saveConfig();
 };
-
 // Fungsi untuk mendapatkan konfigurasi saat ini
 const getConfig = () => Config;
-
 loadConfig();
-
 export { Config, setConfig, getConfig };

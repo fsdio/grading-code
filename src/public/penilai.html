@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Halaman Penguji</title>
+    <title>Halaman Penilai</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -48,7 +48,7 @@
 
         button {
             padding: 10px 20px;
-            background-color: #007bff;
+            background-color: #000000;
             color: #fff;
             border: none;
             border-radius: 4px;
@@ -57,7 +57,7 @@
         }
 
         button:hover {
-            background-color: #0056b3;
+            background-color: #000000;
         }
 
         #problemContainer {
@@ -117,7 +117,7 @@
 
         #configForm button {
             padding: 10px 20px;
-            background-color: #007bff;
+            background-color: #000000;
             color: #fff;
             border: none;
             border-radius: 4px;
@@ -126,7 +126,7 @@
         }
 
         #configForm button:hover {
-            background-color: #0056b3;
+            background-color: #000000;
         }
 
         #currentConfig {
@@ -149,9 +149,9 @@
 </head>
 <body>
 <div class="container">
-    <h1>Upload Penguji File</h1>
-    <form id="uploadForm" action="/upload/penguji" method="POST" enctype="multipart/form-data">
-        <input type="file" name="file" id="file" required>
+    <h1>Upload Penilai File</h1>
+    <form id="uploadForm" action="/upload/penilai" method="POST" enctype="multipart/form-data">
+        <input type="file" name="file" id="file" accept=".js" required>
         <button type="submit">Upload File</button>
     </form>
     <div id="problemContainer"></div>
@@ -177,6 +177,14 @@
 <script>
 	document.getElementById('uploadForm').addEventListener('submit', async (event) => {
 		event.preventDefault();
+		const fileInput = document.getElementById('file');
+		const file = fileInput.files[0];
+
+		if (file && file.type !== 'application/javascript' && file.name.split('.').pop() !== 'js') {
+			alert('Only JavaScript files are allowed!');
+			return;
+		}
+
 		const formData = new FormData(event.target);
 		try {
 			const response = await fetch(event.target.action, {
@@ -191,7 +199,6 @@
 			alert('Error uploading file');
 		}
 	});
-
 	async function fetchProblems() {
 		try {
 			const response = await fetch('/problems');

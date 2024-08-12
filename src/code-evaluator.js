@@ -4,22 +4,19 @@ import fs from 'fs';
 import path from 'path';
 
 class CodeEvaluator {
-	constructor(filePathPenguji, filePathProgrammers) {
+	constructor(filePathPenilai, filePathProgrammers) {
 		this.analyzer = new CodeAnalyzer();
-		this.filePathPenguji = filePathPenguji;
+		this.filePathPenilai = filePathPenilai;
 		this.filePathProgrammers = filePathProgrammers;
 		this.evaluationResult = null;
 	}
-	
 	async evaluateProgrammer() {
-		return this.evaluate(this.filePathProgrammers, this.filePathPenguji, false);
+		return this.evaluate(this.filePathProgrammers, this.filePathPenilai, false);
 	}
-	
-	async evaluatePenguji() {
-		return this.evaluate(this.filePathPenguji, this.filePathPenguji, true);
+	async evaluatePenilai() {
+		return this.evaluate(this.filePathPenilai, this.filePathPenilai, true);
 	}
-	
-	async evaluate(filePathToEvaluate, referenceFilePath, isPenguji) {
+	async evaluate(filePathToEvaluate, referenceFilePath, isPenilai) {
 		const spec = this.analyzer.getSpecificationsFromCode(filePathToEvaluate);
 		const compileResult = this.analyzer.compareFileOutputs(referenceFilePath, filePathToEvaluate);
 		
@@ -59,7 +56,7 @@ class CodeEvaluator {
 		let functionPoints = functionMatches * Config.POINT_FUNCTION;
 		let classPoints = classMatches * Config.POINT_CLASS;
 		let variablePoints = variableMatches * Config.POINT_VARIABLES;
-		let equalCompilePoints = isPenguji ? Config.POINT_EQUAL_COMPILE : (compileResult.status ? Config.POINT_EQUAL_COMPILE : 0); // Adjusted points based on status
+		let equalCompilePoints = isPenilai ? Config.POINT_EQUAL_COMPILE : (compileResult.status ? Config.POINT_EQUAL_COMPILE : 0); // Adjusted points based on status
 		let totalPoints = functionPoints + classPoints + variablePoints + equalCompilePoints;
 		
 		this.evaluationResult = {
@@ -77,7 +74,6 @@ class CodeEvaluator {
 		
 		return this.evaluationResult;
 	}
-	
 	countMatches(arr1, arr2) {
 		let matches = 0;
 		const minLength = Math.min(arr1.length, arr2.length);
@@ -88,7 +84,6 @@ class CodeEvaluator {
 		}
 		return matches;
 	}
-	
 	createSpec(result) {
 		return {
 			functions: result.functions,
@@ -97,15 +92,13 @@ class CodeEvaluator {
 			points: result.points,
 		};
 	}
-	
-	calculatePercentage(totalPointsPenguji, totalPointsProgrammers) {
-		if (totalPointsPenguji <= 0 || totalPointsProgrammers <= 0) {
+	calculatePercentage(totalPointsPenilai, totalPointsProgrammers) {
+		if (totalPointsPenilai <= 0 || totalPointsProgrammers <= 0) {
 			return 0;
 		}
 		
-		let percentage = (totalPointsProgrammers / totalPointsPenguji) * 100;
+		let percentage = (totalPointsProgrammers / totalPointsPenilai) * 100;
 		return Math.round(percentage);
 	}
 }
-
 export { CodeEvaluator };

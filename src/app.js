@@ -25,12 +25,11 @@ app.use((req, res, next) => {
 
 const createProblemDirectory = () => {
 	const problemKey = `problem${Date.now()}`;
-	const problemDir = path.join(problemsDir, problemKey, 'penguji');
+	const problemDir = path.join(problemsDir, problemKey, 'penilai');
 	fs.mkdirSync(problemDir, { recursive: true });
 	return { problemKey, problemDir };
 };
-
-const pengujiStorage = multer.diskStorage({
+const penilaiStorage = multer.diskStorage({
 	destination: (req, file, cb) => {
 		const { problemKey, problemDir } = createProblemDirectory();
 		req.problemKey = problemKey; // Attach problemKey to the request object
@@ -38,11 +37,9 @@ const pengujiStorage = multer.diskStorage({
 	},
 	filename: (req, file, cb) => cb(null, file.originalname)
 });
-
-const pengujiUpload = multer({ storage: pengujiStorage });
+const penilaiUpload = multer({ storage: penilaiStorage });
 const programmerUpload = multer({ storage: multer.memoryStorage() });
-
-const evaluateProgrammers = async (problemDir, pengujiPath, pengujiTotalPoints) => {
+const evaluateProgrammers = async (problemDir, penilaiPath, penilaiTotalPoints) => {
 	const programmersDir = path.join(problemDir, 'programmers');
 	let results = [];
 	try {
@@ -52,7 +49,7 @@ const evaluateProgrammers = async (problemDir, pengujiPath, pengujiTotalPoints) 
 		for (const file of jsFiles) {
 			try {
 				const programmerPath = path.join(programmersDir, file);
-				const evaluatorProgrammer = new CodeEvaluator(pengujiPath, programmerPath);
+				const evaluatorProgrammer = new CodeEvaluator(penilaiPath, programmerPath);
 				
 				const resultProgrammers = await evaluatorProgrammer.evaluateProgrammer();
 				const specProgrammers = evaluatorProgrammer.createSpec(resultProgrammers);
@@ -60,7 +57,7 @@ const evaluateProgrammers = async (problemDir, pengujiPath, pengujiTotalPoints) 
 				results.push({
 					fileName: file,
 					specProgrammers,
-					percentageActuals: evaluatorProgrammer.calculatePercentage(pengujiTotalPoints, specProgrammers.points.totalPoints)
+					percentageActuals: evaluatorProgrammer.calculatePercentage(penilaiTotalPoints, specProgrammers.points.totalPoints)
 				});
 			} catch (error) {
 				console.error(`Error during evaluation of ${file}:`, error);
@@ -71,24 +68,22 @@ const evaluateProgrammers = async (problemDir, pengujiPath, pengujiTotalPoints) 
 	}
 	return results;
 };
-
-const evaluatePenguji = async (problem) => {
+const evaluatePenilai = async (problem) => {
 	const problemDir = path.join(problemsDir, problem);
 	try {
-		const pengujiPath = path.join(problemDir, 'penguji', 'example.js');
-		const evaluatorPenguji = new CodeEvaluator(pengujiPath, pengujiPath);
+		const penilaiPath = path.join(problemDir, 'penilai', 'example.js');
+		const evaluatorPenilai = new CodeEvaluator(penilaiPath, penilaiPath);
 		
-		const resultPenguji = await evaluatorPenguji.evaluatePenguji();
-		const pengujiTotalPoints = resultPenguji.points.totalPoints;
+		const resultPenilai = await evaluatorPenilai.evaluatePenilai();
+		const penilaiTotalPoints = resultPenilai.points.totalPoints;
 		
-		console.log('Penguji Evaluation Result:', JSON.stringify(resultPenguji, null, 2));
+		console.log('Penilai Evaluation Result:', JSON.stringify(resultPenilai, null, 2));
 		
-		return await evaluateProgrammers(problemDir, pengujiPath, pengujiTotalPoints);
+		return await evaluateProgrammers(problemDir, penilaiPath, penilaiTotalPoints);
 	} catch (err) {
-		console.error('Error evaluating penguji:', err);
+		console.error('Error evaluating penilai:', err);
 	}
 };
-
 const getAllProblemKeys = () => {
 	try {
 		return fs.readdirSync(problemsDir).filter(file => fs.statSync(path.join(problemsDir, file)).isDirectory());
@@ -97,15 +92,12 @@ const getAllProblemKeys = () => {
 		return [];
 	}
 };
-
 app.use(express.static(path.join(__dirname, 'public')));
-
-app.get('/penguji/:problem', async (req, res) => {
+app.get('/penilai/:problem', async (req, res) => {
 	const { problem } = req.params;
-	const results = await evaluatePenguji(problem);
+	const results = await evaluatePenilai(problem);
 	res.json(results);
 });
-
 app.get('/problems', (req, res) => {
 	const problemKeys = getAllProblemKeys();
 	if (problemKeys.length > 0) {
@@ -114,10 +106,9 @@ app.get('/problems', (req, res) => {
 		res.status(404).json({ error: 'No problems found' });
 	}
 });
-
 app.get('/programmers/:problem/:fileName', async (req, res) => {
 	const { problem, fileName } = req.params;
-	const results = await evaluatePenguji(problem);
+	const results = await evaluatePenilai(problem);
 	const result = results.find(r => r.fileName === fileName);
 	if (result) {
 		res.json(result);
@@ -125,8 +116,7 @@ app.get('/programmers/:problem/:fileName', async (req, res) => {
 		res.status(404).json({ error: 'File not found' });
 	}
 });
-
-app.post('/upload/penguji', pengujiUpload.single('file'), (req, res) => {
+app.post('/upload/penilai', penilaiUpload.single('file'), (req, res) => {
 	const { file } = req;
 	if (!file) {
 		return res.status(400).json({ error: 'Please upload a file' });
@@ -138,7 +128,6 @@ app.post('/upload/penguji', pengujiUpload.single('file'), (req, res) => {
 	// Pastikan untuk mengembalikan respons setelah file berhasil diunggah
 	res.json({ message: 'File uploaded successfully', file, problemKey });
 });
-
 app.post('/upload/programmer', programmerUpload.single('file'), async (req, res) => {
 	const { problem } = req.body;
 	const file = req.file;
@@ -154,16 +143,14 @@ app.post('/upload/programmer', programmerUpload.single('file'), async (req, res)
 			return res.status(500).json({ error: 'Failed to save file' });
 		}
 		try {
-			const results = await evaluatePenguji(problem);
+			const results = await evaluatePenilai(problem);
 			res.json({ message: 'File uploaded successfully', file, results });
 		} catch (error) {
-			console.error('Error evaluating penguji after upload:', error);
-			res.status(500).json({ error: 'Error evaluating penguji after upload' });
+			console.error('Error evaluating penilai after upload:', error);
+			res.status(500).json({ error: 'Error evaluating penilai after upload' });
 		}
 	});
 });
-
-
 app.post('/config', (req, res) => {
 	const newConfig = req.body;
 	setConfig(newConfig);
@@ -175,11 +162,9 @@ app.post('/config', (req, res) => {
 		totalPoints: totalPoints
 	});
 });
-
 app.get('/config', (req, res) => {
 	res.json(getConfig());
 });
-
 const getLocalIpAddress = () => {
 	const interfaces = os.networkInterfaces();
 	for (const interfaceName of Object.keys(interfaces)) {
@@ -191,7 +176,6 @@ const getLocalIpAddress = () => {
 	}
 	return '127.0.0.1';
 };
-
 const localIp = getLocalIpAddress();
 app.listen(port, () => {
 	console.log(`Server is running at http://${localIp}:${port}`);

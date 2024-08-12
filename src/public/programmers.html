@@ -48,7 +48,7 @@
 
     button {
       padding: 10px 20px;
-      background-color: #007bff;
+      background-color: #000000;
       color: #fff;
       border: none;
       border-radius: 4px;
@@ -57,7 +57,7 @@
     }
 
     button:hover {
-      background-color: #0056b3;
+      background-color: #000000;
     }
 
     #fileDetails {
@@ -89,7 +89,7 @@
 <div class="container">
   <h1>Upload Programmer File</h1>
   <form id="uploadForm" action="/upload/programmer" method="POST" enctype="multipart/form-data">
-    <input type="file" name="file" id="file" required>
+    <input type="file" name="file" id="file" accept=".js" required>
     <label for="problem">Problem:</label>
     <input type="text" id="problem" name="problem" required>
     <button type="submit">Upload File</button>
@@ -107,6 +107,14 @@
 <script>
   document.getElementById('uploadForm').addEventListener('submit', async (event) => {
     event.preventDefault();
+    const fileInput = document.getElementById('file');
+    const file = fileInput.files[0];
+
+    if (file && file.type !== 'application/javascript' && file.name.split('.').pop() !== 'js') {
+      alert('Only JavaScript files are allowed!');
+      return;
+    }
+
     const formData = new FormData(event.target);
     try {
       const response = await fetch(event.target.action, {
@@ -116,12 +124,11 @@
       const result = await response.json();
       console.log('Upload result:', result);
       alert('File uploaded successfully');
-      displayFileDetails(result);
     } catch (error) {
       console.error('Error uploading file:', error);
+      alert('Error uploading file');
     }
   });
-
   function displayFileDetails(fileData) {
     const fileDetails = document.getElementById('fileDetails');
     const { fileName, specProgrammers, percentageActuals } = fileData;

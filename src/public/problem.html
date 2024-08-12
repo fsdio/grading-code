@@ -40,7 +40,7 @@
         }
 
         th {
-            background-color: #007bff;
+            background-color: #000000;
             color: #fff;
         }
 
@@ -58,7 +58,7 @@
 <script>
 	async function fetchResults(problem) {
 		try {
-			const response = await fetch(`/penguji/${problem}`);
+			const response = await fetch(`/penilai/${problem}`);
 			const results = await response.json();
 			displayResults(problem, results);
 		} catch (error) {
