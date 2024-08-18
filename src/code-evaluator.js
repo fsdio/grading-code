@@ -20,7 +20,11 @@ class CodeEvaluator {
 		const spec = this.analyzer.getSpecificationsFromCode(filePathToEvaluate);
 		const compileResult = this.analyzer.compareFileOutputs(referenceFilePath, filePathToEvaluate);
 		
-		const referenceSpec = this.analyzer.getSpecificationsFromCode(referenceFilePath);
+		// Ambil spesifikasi referensi berdasarkan isPenilai
+		const referenceSpec = isPenilai
+			? this.analyzer.getSpecificationsFromCode(referenceFilePath)
+			: JSON.parse(await fs.promises.readFile(path.join(path.dirname(referenceFilePath), 'spec.json'), 'utf8'));
+		
 		const { functionNames = [], classNames = [], variableNames = [] } = spec;
 		
 		// Cek kesamaan dengan kode programmer lain
@@ -48,16 +52,17 @@ class CodeEvaluator {
 		}
 		
 		// Hitung kesamaan
-		const functionMatches = this.countMatches(functionNames, referenceSpec.functionNames);
-		const classMatches = this.countMatches(classNames, referenceSpec.classNames);
-		const variableMatches = this.countMatches(variableNames, referenceSpec.variableNames);
+		const functionMatches = this.countMatches(functionNames, referenceSpec.functionNames || referenceSpec.functions);
+		const classMatches = this.countMatches(classNames, referenceSpec.classNames || referenceSpec.classes);
+		const variableMatches = this.countMatches(variableNames, referenceSpec.variableNames || referenceSpec.variables);
 		
-		// Hitung point
-		let functionPoints = functionMatches * Config.POINT_FUNCTION;
-		let classPoints = classMatches * Config.POINT_CLASS;
-		let variablePoints = variableMatches * Config.POINT_VARIABLES;
-		let equalCompilePoints = isPenilai ? Config.POINT_EQUAL_COMPILE : (compileResult.status ? Config.POINT_EQUAL_COMPILE : 0); // Adjusted points based on status
-		let totalPoints = functionPoints + classPoints + variablePoints + equalCompilePoints;
+		// Hitung poin berdasarkan isPenilai
+		const configPoints = isPenilai ? Config : referenceSpec;
+		const functionPoints = functionMatches * configPoints.POINT_FUNCTION;
+		const classPoints = classMatches * configPoints.POINT_CLASS;
+		const variablePoints = variableMatches * configPoints.POINT_VARIABLES;
+		const equalCompilePoints = compileResult.status ? configPoints.POINT_EQUAL_COMPILE : 0;
+		const totalPoints = functionPoints + classPoints + variablePoints + equalCompilePoints;
 		
 		this.evaluationResult = {
 			functions: functionNames,

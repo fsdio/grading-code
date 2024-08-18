@@ -75,15 +75,33 @@ const evaluatePenilai = async (problem) => {
 		const evaluatorPenilai = new CodeEvaluator(penilaiPath, penilaiPath);
 		
 		const resultPenilai = await evaluatorPenilai.evaluatePenilai();
+		const updatedResultPenilai = {
+			...resultPenilai,
+			POINT_FUNCTION: Config.POINT_FUNCTION,
+			POINT_CLASS: Config.POINT_CLASS,
+			POINT_VARIABLES: Config.POINT_VARIABLES,
+			POINT_EQUAL_COMPILE: Config.POINT_EQUAL_COMPILE
+		};
+		
 		const penilaiTotalPoints = resultPenilai.points.totalPoints;
 		
 		console.log('Penilai Evaluation Result:', JSON.stringify(resultPenilai, null, 2));
+		
+		// Cek apakah file spec.json sudah ada
+		const specPath = path.join(problemDir, 'penilai', 'spec.json');
+		if (!fs.existsSync(specPath)) {
+			// Jika belum ada, simpan hasil evaluasi sebagai spec.json
+			fs.writeFileSync(specPath, JSON.stringify(updatedResultPenilai, null, 2), 'utf8');
+		} else {
+			console.log('File spec.json sudah ada, tidak perlu membuat ulang.');
+		}
 		
 		return await evaluateProgrammers(problemDir, penilaiPath, penilaiTotalPoints);
 	} catch (err) {
 		console.error('Error evaluating penilai:', err);
 	}
 };
+
 const getAllProblemKeys = () => {
 	try {
 		return fs.readdirSync(problemsDir).filter(file => fs.statSync(path.join(problemsDir, file)).isDirectory());
@@ -92,7 +110,44 @@ const getAllProblemKeys = () => {
 		return [];
 	}
 };
+
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.post('/update-spec', (req, res) => {
+	const { problem, resultPenilai } = req.body;
+	if (!problem || !resultPenilai) {
+		return res.status(400).json({ error: 'Problem and resultPenilai are required' });
+	}
+	
+	const problemDir = path.join(problemsDir, problem);
+	const specPath = path.join(problemDir, 'penilai', 'spec.json');
+	
+	try {
+		fs.writeFileSync(specPath, JSON.stringify(resultPenilai, null, 2), 'utf8');
+		res.status(200).json({ message: 'spec.json updated successfully' });
+	} catch (err) {
+		console.error('Error updating spec.json:', err);
+		res.status(500).json({ error: 'Error updating spec.json' });
+	}
+});
+app.get('/get-spec/:problem', (req, res) => {
+	const { problem } = req.params;
+	const problemDir = path.join(problemsDir, problem);
+	const specPath = path.join(problemDir, 'penilai', 'spec.json');
+	
+	try {
+		if (fs.existsSync(specPath)) {
+			const specData = fs.readFileSync(specPath, 'utf8');
+			res.status(200).json(JSON.parse(specData));
+		} else {
+			res.status(404).json({ error: 'spec.json not found' });
+		}
+	} catch (err) {
+		console.error('Error reading spec.json:', err);
+		res.status(500).json({ error: 'Error reading spec.json' });
+	}
+});
+
 app.get('/penilai/:problem', async (req, res) => {
 	const { problem } = req.params;
 	const results = await evaluatePenilai(problem);
@@ -104,16 +159,6 @@ app.get('/problems', (req, res) => {
 		res.json(problemKeys);
 	} else {
 		res.status(404).json({ error: 'No problems found' });
-	}
-});
-app.get('/programmers/:problem/:fileName', async (req, res) => {
-	const { problem, fileName } = req.params;
-	const results = await evaluatePenilai(problem);
-	const result = results.find(r => r.fileName === fileName);
-	if (result) {
-		res.json(result);
-	} else {
-		res.status(404).json({ error: 'File not found' });
 	}
 });
 app.post('/upload/penilai', penilaiUpload.single('file'), (req, res) => {

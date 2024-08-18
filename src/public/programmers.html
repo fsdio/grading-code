@@ -22,7 +22,7 @@
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       width: 400px;
       text-align: center;
-      margin-top: 50px; /* Margin atas untuk memposisikan di tengah */
+      margin-top: 50px;
     }
 
     h1 {
@@ -37,7 +37,7 @@
       margin-bottom: 20px;
     }
 
-    input[type="file"], input[type="text"], input[type="button"] {
+    input[type="file"], input[type="text"], button {
       margin-bottom: 10px;
       padding: 10px;
       border: 1px solid #ccc;
@@ -57,31 +57,7 @@
     }
 
     button:hover {
-      background-color: #000000;
-    }
-
-    #fileDetails {
-      margin-top: 20px;
-      text-align: left;
-    }
-
-    #fileDetails h2 {
-      color: #333;
-      margin-bottom: 10px;
-    }
-
-    #fileDetails p {
-      margin-bottom: 5px;
-      color: #666;
-    }
-
-    #fileDetails ul {
-      list-style-type: none;
-      padding: 0;
-    }
-
-    #fileDetails li {
-      margin-bottom: 5px;
+      background-color: #333;
     }
   </style>
 </head>
@@ -94,14 +70,6 @@
     <input type="text" id="problem" name="problem" required>
     <button type="submit">Upload File</button>
   </form>
-  <form id="fetchForm">
-    <label for="fetchProblem">Problem:</label>
-    <input type="text" id="fetchProblem" name="fetchProblem" required>
-    <label for="fetchFileName">File Name:</label>
-    <input type="text" id="fetchFileName" name="fetchFileName" required>
-    <button type="button" onclick="fetchProblemFile()">Fetch File Details</button>
-  </form>
-  <div id="fileDetails"></div>
 </div>
 
 <script>
@@ -129,46 +97,6 @@
       alert('Error uploading file');
     }
   });
-  function displayFileDetails(fileData) {
-    const fileDetails = document.getElementById('fileDetails');
-    const { fileName, specProgrammers, percentageActuals } = fileData;
-    const { functions, classes, variables, points } = specProgrammers;
-
-    fileDetails.innerHTML = `
-      <h2>File Details</h2>
-      <p><strong>File Name:</strong> ${fileName}</p>
-      <p><strong>Functions:</strong></p>
-      <ul>${functions.map(func => `<li>${func}</li>`).join('')}</ul>
-      <p><strong>Classes:</strong></p>
-      <ul>${classes.map(cls => `<li>${cls}</li>`).join('')}</ul>
-      <p><strong>Variables:</strong></p>
-      <ul>${variables.map(variable => `<li>${variable}</li>`).join('')}</ul>
-      <p><strong>Score:</strong></p>
-      <ul>
-        <li>Function Score: ${points.functionPoints}</li>
-        <li>Class Score: ${points.classPoints}</li>
-        <li>Variable Score: ${points.variablePoints}</li>
-        <li>Equal Compile Score: ${points.equalCompilePoints}</li>
-        <li>Total Score: ${points.totalPoints}</li>
-      </ul>
-      <p><strong>Percentage Actuals:</strong> ${percentageActuals}%</p>
-    `;
-  }
-
-  async function fetchProblemFile() {
-    const problem = document.getElementById('fetchProblem').value;
-    const fileName = document.getElementById('fetchFileName').value;
-
-    try {
-      const response = await fetch(`/programmers/${problem}/${fileName}`);
-      const fileData = await response.json();
-      console.log('File Data:', fileData);
-      displayFileDetails(fileData);
-    } catch (error) {
-      console.error('Error fetching file data:', error);
-      alert('Error fetching file data');
-    }
-  }
 </script>
 </body>
 </html>
