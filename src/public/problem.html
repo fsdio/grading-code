@@ -208,6 +208,7 @@
                                 <td class="${functionMatchClass}">${result.specProgrammers.functions ? result.specProgrammers.functions.join(', ') : 'N/A'}</td>
                                 <td class="${classMatchClass}">${result.specProgrammers.classes ? result.specProgrammers.classes.join(', ') : 'N/A'}</td>
                                 <td class="${variablesMatchClass}">${result.specProgrammers.variables ? result.specProgrammers.variables.join(', ') : 'N/A'}</td>
+                                <td>${result.specProgrammers.equalCompile ? 'BENAR' : 'GAGAL'}</td>
                             </tr>
                         `;
 				}).join('')}
@@ -218,55 +219,63 @@
 		}
 
 		async function fetchSpec() {
-		const problem = document.getElementById('problemInput').value;
-		if (!problem) {
-			alert('Please enter a problem name.');
-			return;
-		}
-
-		try {
-			const response = await fetch(`/get-spec/${problem}`);
-			if (response.ok) {
-				const spec = await response.json();
-				document.getElementById('specTextarea').value = JSON.stringify(spec, null, 2);
-			} else {
-				document.getElementById('specTextarea').value = 'spec.json not found';
+			const problem = document.getElementById('problemInput').value;
+			if (!problem) {
+				alert('Please enter a problem name.');
+				return;
 			}
-		} catch (error) {
-			console.error('Error fetching spec.json:', error);
-			document.getElementById('specTextarea').value = 'Error fetching spec.json';
-		}
-	}
 
-	async function updateSpec() {
-		const problem = document.getElementById('problemInput').value;
-		const specContent = document.getElementById('specTextarea').value;
-		if (!problem || !specContent) {
-			alert('Please enter both problem name and spec content.');
-			return;
-		}
-
-		try {
-			const response = await fetch('/update-spec', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({ problem, resultPenilai: JSON.parse(specContent) }),
-			});
-
-			if (response.ok) {
-				alert('spec.json updated successfully');
-			} else {
-				alert('Failed to update spec.json');
+			try {
+				const response = await fetch(`/get-spec/${problem}`);
+				if (response.ok) {
+					const spec = await response.json();
+					document.getElementById('specTextarea').value = JSON.stringify(spec, null, 2);
+				} else {
+					document.getElementById('specTextarea').value = 'spec.json not found';
+				}
+			} catch (error) {
+				console.error('Error fetching spec.json:', error);
+				document.getElementById('specTextarea').value = 'Error fetching spec.json';
 			}
-		} catch (error) {
-			console.error('Error updating spec.json:', error);
-			alert('Error updating spec.json');
 		}
-	}
 
-	// Fetch results on page load if a problem is specified in the URL
+		async function updateSpec() {
+			const problem = document.getElementById('problemInput').value;
+			const specContent = document.getElementById('specTextarea').value;
+			if (!problem || !specContent) {
+				alert('Please enter both problem name and spec content.');
+				return;
+			}
+
+			let parsedSpec;
+			try {
+				parsedSpec = JSON.parse(specContent);
+			} catch (error) {
+				alert('Invalid JSON format. Please check the spec content.');
+				console.error('Invalid JSON format:', error);
+				return;
+			}
+
+			try {
+				const response = await fetch('/update-spec', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({ problem, resultPenilai: parsedSpec }),
+				});
+
+				if (response.ok) {
+					alert('spec.json updated successfully');
+				} else {
+					alert('Failed to update spec.json');
+				}
+			} catch (error) {
+				console.error('Error updating spec.json:', error);
+				alert('Error updating spec.json');
+			}
+		}
+		// Fetch results on page load if a problem is specified in the URL
 	const urlParams = new URLSearchParams(window.location.search);
 	const problem = urlParams.get('problem');
 	if (problem) {

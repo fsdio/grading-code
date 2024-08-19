@@ -73,24 +73,23 @@ const evaluateProgrammers = async (problemDir, penilaiPath) => {
 };
 const evaluatePenilai = async (problem) => {
 	const problemDir = path.join(problemsDir, problem);
+	const penilaiDir = path.join(problemDir, 'penilai', 'example.js');
+	const specPath = path.join(problemDir, 'penilai', 'spec.json');
+	
 	try {
-		const penilaiPath = path.join(problemDir, 'penilai', 'example.js');
-		const evaluatorPenilai = new CodeEvaluator(penilaiPath, penilaiPath);
-		
-		const resultPenilai = await evaluatorPenilai.evaluatePenilai();
-		
-		console.log('Penilai Evaluation Result:', JSON.stringify(resultPenilai, null, 2));
-		
-		// Cek apakah file spec.json sudah ada
-		const specPath = path.join(problemDir, 'penilai', 'spec.json');
+		// Buat file spec.json jika belum ada
 		if (!fs.existsSync(specPath)) {
-			// Jika belum ada, simpan hasil evaluasi sebagai spec.json
-			fs.writeFileSync(specPath, JSON.stringify(resultPenilai, null, 2), 'utf8');
+			const evaluatorPenilai = new CodeEvaluator(penilaiDir, penilaiDir);
+			const resultPenilai = await evaluatorPenilai.evaluatePenilai();
+			const specPenilai = evaluatorPenilai.createSpec(resultPenilai);
+			fs.writeFileSync(specPath, JSON.stringify(specPenilai, null, 2));
+			console.log(JSON.stringify(specPenilai, null, 2));
+			console.log(`File '${specPath}' berhasil dibuat.`);
 		} else {
-			console.log('File spec.json sudah ada, tidak perlu membuat ulang.');
+			console.log(`File '${specPath}' sudah ada.`);
 		}
 		
-		return await evaluateProgrammers(problemDir, penilaiPath);
+		return await evaluateProgrammers(problemDir, penilaiDir);
 	} catch (err) {
 		console.error('Error evaluating penilai:', err);
 	}
@@ -126,22 +125,21 @@ app.post('/update-spec', (req, res) => {
 });
 app.get('/get-spec/:problem', (req, res) => {
 	const { problem } = req.params;
-	const problemDir = path.join(problemsDir, problem);
-	const specPath = path.join(problemDir, 'penilai', 'spec.json');
+	const specPath = path.join(problemsDir, problem, 'penilai', 'spec.json'); // Menggunakan nama variabel yang lebih deskriptif
 	
 	try {
-		if (fs.existsSync(specPath)) {
-			const specData = fs.readFileSync(specPath, 'utf8');
-			res.status(200).json(JSON.parse(specData));
+		if (fs.existsSync(specPath)) { // Memeriksa apakah spec.json ada
+			const specData = fs.readFileSync(specPath, 'utf8'); // Membaca konten spec.json
+			res.status(200).json(JSON.parse(specData)); // Mengirimkan data dalam bentuk JSON
 		} else {
-			res.status(404).json({ error: 'spec.json not found' });
+			console.warn(`spec.json not found for problem ${problem}`); // Memberikan peringatan jika spec.json tidak ditemukan
+			res.status(404).json({ error: `spec.json not found for problem ${problem}` });
 		}
 	} catch (err) {
-		console.error('Error reading spec.json:', err);
-		res.status(500).json({ error: 'Error reading spec.json' });
+		console.error(`Error reading spec.json for problem ${problem}:`, err); // Menangani kesalahan saat membaca file
+		res.status(500).json({ error: `Error reading spec.json for problem ${problem}` });
 	}
 });
-
 app.get('/penilai/:problem', async (req, res) => {
 	const { problem } = req.params;
 	const results = await evaluatePenilai(problem);

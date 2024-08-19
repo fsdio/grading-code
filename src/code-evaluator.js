@@ -19,10 +19,15 @@ class CodeEvaluator {
 		return this.evaluate(this.filePathPenilai, this.filePathPenilai, true);
 	}
 	
-	async evaluate(filePathToEvaluate, referenceFilePath) {
+	async evaluate(filePathToEvaluate, referenceFilePath, isPenilai) {
 		// Ambil spesifikasi dari file spec.json
-		const specPath = path.join(path.dirname(this.filePathPenilai), 'spec.json');
-		const specData = JSON.parse(await fs.promises.readFile(specPath, 'utf-8'));
+		let specPath, specData;
+		if(isPenilai){
+			specData = this.analyzer.getSpecificationsFromCode(referenceFilePath);
+		}else {
+			specPath = path.join(path.dirname(this.filePathPenilai), 'spec.json');
+			specData = JSON.parse(await fs.promises.readFile(specPath, 'utf-8'));
+		}
 		
 		const spec = this.analyzer.getSpecificationsFromCode(filePathToEvaluate);
 		const compileResult = this.analyzer.compareFileOutputs(referenceFilePath, filePathToEvaluate);
@@ -41,19 +46,29 @@ class CodeEvaluator {
 						functions: [],
 						classes: [],
 						variables: [],
-						equalCompile: [],
-						checkSpec: {}
+						equalCompile: false,
+						checkSpec: []
 					};
 				}
 			}
 		}
 		
 		// Cek spesifikasi dengan spec.json
-		const checkSpec = {
-			functions: this.checkSpecMatches(functionNames, specData.functions),
-			classes: this.checkSpecMatches(classNames, specData.classes),
-			variables: this.checkSpecMatches(variableNames, specData.variables)
-		};
+		let checkSpec;
+		if(isPenilai){
+			checkSpec = {
+				functions: this.checkSpecMatches(functionNames, functionNames),
+				classes: this.checkSpecMatches(classNames, functionNames),
+				variables: this.checkSpecMatches(variableNames, functionNames)
+			};
+		} else {
+			checkSpec = {
+				functions: this.checkSpecMatches(functionNames, specData.functions),
+				classes: this.checkSpecMatches(classNames, specData.classes),
+				variables: this.checkSpecMatches(variableNames, specData.variables)
+			};
+		}
+		
 		
 		// Hasil evaluasi
 		this.evaluationResult = {
