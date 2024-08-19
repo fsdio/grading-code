@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,9 +11,10 @@
             background-color: #f0f0f0;
             display: flex;
             justify-content: center;
-            align-items: center;
-            height: 150vh;
+            align-items: flex-start;
+            height: 100vh;
             margin: 0;
+            padding: 10px;
         }
 
         .container {
@@ -20,14 +22,16 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 400px;
+            width: 100%;
+            max-width: 500px;
             text-align: center;
-            margin-top: 50px;
+            margin-top: 20px;
         }
 
         h1 {
             color: #333;
             margin-bottom: 20px;
+            font-size: 1.8rem;
         }
 
         form {
@@ -38,26 +42,30 @@
         }
 
         input[type="file"] {
-            margin-bottom: 10px;
-            padding: 10px;
+            margin-bottom: 15px;
+            padding: 12px;
             border: 1px solid #ccc;
             border-radius: 4px;
             width: 100%;
             box-sizing: border-box;
+            font-size: 1rem;
         }
 
         button {
-            padding: 10px 20px;
-            background-color: #000000;
+            padding: 12px;
+            background-color: #000;
             color: #fff;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.3s ease;
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         button:hover {
-            background-color: #000000;
+            background-color: #333;
         }
 
         #problemContainer {
@@ -68,6 +76,7 @@
         #problemContainer h2 {
             color: #333;
             margin-bottom: 10px;
+            font-size: 1.5rem;
         }
 
         #problemContainer ul {
@@ -95,58 +104,40 @@
             font-style: italic;
         }
 
-        #configForm {
-            margin-top: 20px;
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            #problemContainer h2 {
+                font-size: 1.3rem;
+            }
+
+            input[type="file"],
+            button {
+                font-size: 0.9rem;
+                padding: 10px;
+            }
         }
 
-        #configForm label {
-            margin-bottom: 5px;
-            color: #333;
-            display: block;
-            text-align: left;
-        }
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.3rem;
+            }
 
-        #configForm input[type="number"] {
-            margin-bottom: 10px;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            width: 100%;
-            box-sizing: border-box;
-        }
+            #problemContainer h2 {
+                font-size: 1.1rem;
+            }
 
-        #configForm button {
-            padding: 10px 20px;
-            background-color: #000000;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        #configForm button:hover {
-            background-color: #000000;
-        }
-
-        #currentConfig {
-            text-align: left;
-            margin-top: 20px;
-            border-top: 1px solid #ccc;
-            padding-top: 10px;
-        }
-
-        #currentConfig h2 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        #currentConfig p {
-            margin-bottom: 5px;
-            color: #666;
+            input[type="file"],
+            button {
+                font-size: 0.8rem;
+                padding: 8px;
+            }
         }
     </style>
 </head>
+
 <body>
 <div class="container">
     <h1>Upload Penilai File</h1>
@@ -155,23 +146,6 @@
         <button type="submit">Upload File</button>
     </form>
     <div id="problemContainer"></div>
-
-    <form id="configForm" action="/config" method="POST">
-        <label for="functionPoints">Function Score:</label>
-        <input type="number" id="functionPoints" name="functionPoints" value="100" required>
-        <br>
-        <label for="classPoints">Class Score:</label>
-        <input type="number" id="classPoints" name="classPoints" value="100" required>
-        <br>
-        <label for="variablePoints">Variables Score:</label>
-        <input type="number" id="variablePoints" name="variablePoints" value="100" required>
-        <br>
-        <label for="equalCompilePoints">Equal Compile Score:</label>
-        <input type="number" id="equalCompilePoints" name="equalCompilePoints" value="100" required>
-        <br>
-        <button type="submit">Submit</button>
-    </form>
-    <div id="currentConfig"></div>
 </div>
 
 <script>
@@ -199,6 +173,7 @@
 			alert('Error uploading file');
 		}
 	});
+
 	async function fetchProblems() {
 		try {
 			const response = await fetch('/problems');
@@ -215,61 +190,16 @@
 			problemContainer.innerHTML = `<p>Not found problems data</p>`;
 		} else {
 			problemContainer.innerHTML = `
-                <h2>Available Problems</h2>
-                <ul>
-                    ${problems.map(problem => `<li onclick="location.href='/problem.html?problem=${problem}'">${problem}</li>`).join('')}
-                </ul>
-            `;
+                    <h2>Available Problems</h2>
+                    <ul>
+                        ${problems.map(problem => `<li onclick="location.href='/problem.html?problem=${problem}'">${problem}</li>`).join('')}
+                    </ul>
+                `;
 		}
 	}
-	fetchProblems();
-	async function fetchConfig() {
-		try {
-			const response = await fetch('/config');
-			const config = await response.json();
-			displayConfig(config);
-		} catch (error) {
-			console.error('Error fetching configuration:', error);
-		}
-	}
-	function displayConfig(config) {
-		const currentConfig = document.getElementById('currentConfig');
-		currentConfig.innerHTML = `
-            <h2>Current Configuration</h2>
-            <p>Function Score: ${config.POINT_FUNCTION}</p>
-            <p>Class Score: ${config.POINT_CLASS}</p>
-            <p>Variables Score: ${config.POINT_VARIABLES}</p>
-            <p>Equal Compile Score: ${config.POINT_EQUAL_COMPILE}</p>
-        `;
-	}
-	document.getElementById('configForm').addEventListener('submit', async (event) => {
-		event.preventDefault();
-		const formData = new FormData(event.target);
-		const configData = {
-			POINT_FUNCTION: formData.get('functionPoints'),
-			POINT_CLASS: formData.get('classPoints'),
-			POINT_VARIABLES: formData.get('variablePoints'),
-			POINT_EQUAL_COMPILE: formData.get('equalCompilePoints')
-		};
 
-		try {
-			const response = await fetch(event.target.action, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(configData)
-			});
-			const result = await response.json();
-			console.log('Configuration updated:', result);
-			alert('Configuration updated successfully');
-			await fetchConfig();
-		} catch (error) {
-			console.error('Error updating configuration:', error);
-			alert('Error updating configuration');
-		}
-	});
-	fetchConfig();
+	fetchProblems();
 </script>
 </body>
+
 </html>

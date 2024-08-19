@@ -5,7 +5,7 @@ import {fileURLToPath} from 'url';
 import multer from 'multer';
 import os from 'os';
 import {CodeEvaluator} from './code-evaluator.js';
-import {Config, getConfig, setConfig} from './config.js';
+import {Config} from './config.js';
 
 const app = express();
 const port = 3000;
@@ -29,17 +29,21 @@ const createProblemDirectory = () => {
 	fs.mkdirSync(problemDir, { recursive: true });
 	return { problemKey, problemDir };
 };
+
 const penilaiStorage = multer.diskStorage({
 	destination: (req, file, cb) => {
 		const { problemKey, problemDir } = createProblemDirectory();
-		req.problemKey = problemKey; // Attach problemKey to the request object
+		req.problemKey = problemKey;
 		cb(null, problemDir);
 	},
 	filename: (req, file, cb) => cb(null, file.originalname)
 });
+
 const penilaiUpload = multer({ storage: penilaiStorage });
+
 const programmerUpload = multer({ storage: multer.memoryStorage() });
-const evaluateProgrammers = async (problemDir, penilaiPath, penilaiTotalPoints) => {
+
+const evaluateProgrammers = async (problemDir, penilaiPath) => {
 	const programmersDir = path.join(problemDir, 'programmers');
 	let results = [];
 	try {
@@ -57,7 +61,6 @@ const evaluateProgrammers = async (problemDir, penilaiPath, penilaiTotalPoints) 
 				results.push({
 					fileName: file,
 					specProgrammers,
-					percentageActuals: evaluatorProgrammer.calculatePercentage(penilaiTotalPoints, specProgrammers.points.totalPoints)
 				});
 			} catch (error) {
 				console.error(`Error during evaluation of ${file}:`, error);
@@ -75,15 +78,6 @@ const evaluatePenilai = async (problem) => {
 		const evaluatorPenilai = new CodeEvaluator(penilaiPath, penilaiPath);
 		
 		const resultPenilai = await evaluatorPenilai.evaluatePenilai();
-		const updatedResultPenilai = {
-			...resultPenilai,
-			POINT_FUNCTION: Config.POINT_FUNCTION,
-			POINT_CLASS: Config.POINT_CLASS,
-			POINT_VARIABLES: Config.POINT_VARIABLES,
-			POINT_EQUAL_COMPILE: Config.POINT_EQUAL_COMPILE
-		};
-		
-		const penilaiTotalPoints = resultPenilai.points.totalPoints;
 		
 		console.log('Penilai Evaluation Result:', JSON.stringify(resultPenilai, null, 2));
 		
@@ -91,12 +85,12 @@ const evaluatePenilai = async (problem) => {
 		const specPath = path.join(problemDir, 'penilai', 'spec.json');
 		if (!fs.existsSync(specPath)) {
 			// Jika belum ada, simpan hasil evaluasi sebagai spec.json
-			fs.writeFileSync(specPath, JSON.stringify(updatedResultPenilai, null, 2), 'utf8');
+			fs.writeFileSync(specPath, JSON.stringify(resultPenilai, null, 2), 'utf8');
 		} else {
 			console.log('File spec.json sudah ada, tidak perlu membuat ulang.');
 		}
 		
-		return await evaluateProgrammers(problemDir, penilaiPath, penilaiTotalPoints);
+		return await evaluateProgrammers(problemDir, penilaiPath);
 	} catch (err) {
 		console.error('Error evaluating penilai:', err);
 	}

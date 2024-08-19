@@ -1,16 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Problem Results and Spec Management</title>
     <style>
+        /* Styling yang sama seperti sebelumnya */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
+            display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
         }
 
         .container {
@@ -18,11 +29,22 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
+            width: 100%;
+            max-width: 800px;
         }
 
         h1 {
             color: #333;
+            font-size: 1.8em;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #333;
+            font-size: 1.5em;
+            margin-top: 20px;
+            margin-bottom: 10px;
         }
 
         table {
@@ -32,12 +54,13 @@
         }
 
         th, td {
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
+            text-align: left;
         }
 
         th {
-            background-color: #000000;
+            background-color: #000;
             color: #fff;
         }
 
@@ -52,11 +75,13 @@
         label {
             display: block;
             margin-bottom: 5px;
+            font-weight: bold;
         }
 
-        input[type="text"], textarea {
+        input[type="text"],
+        textarea {
             width: 100%;
-            padding: 8px;
+            padding: 10px;
             margin: 5px 0 10px;
             border-radius: 4px;
             border: 1px solid #ddd;
@@ -69,13 +94,53 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            width: 100%;
+            max-width: 200px;
+            margin: 10px 0;
+            font-size: 1em;
         }
 
         button:hover {
             background-color: #555;
         }
+
+        .mismatch {
+            background-color: #ffcccc;
+            color: #a00;
+        }
+
+        .match {
+            background-color: #ccffcc;
+            color: #080;
+        }
+
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5em;
+            }
+
+            h2 {
+                font-size: 1.2em;
+            }
+
+            button {
+                padding: 8px 12px;
+                font-size: 0.9em;
+            }
+
+            th, td {
+                padding: 8px;
+                font-size: 0.9em;
+            }
+
+            textarea {
+                font-size: 0.9em;
+            }
+        }
     </style>
 </head>
+
 <body>
 <div class="container">
     <h1 id="problemTitle">Problem Results and Spec Management</h1>
@@ -112,50 +177,47 @@
 		}
 	}
 
-	function displayResults(problem, results) {
-		document.getElementById('problemTitle').innerText = `Results for Problem: ${problem}`;
-		const resultsContainer = document.getElementById('resultsContainer');
-		if (results.length === 0) {
-			resultsContainer.innerHTML = `<p>No results found for this problem</p>`;
-		} else {
-			resultsContainer.innerHTML = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>File Name</th>
-                            <th>Functions</th>
-                            <th>Classes</th>
-                            <th>Variables</th>
-                            <th>Score</th>
-                            <th>Percentage</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${results.map(result => `
+		function displayResults(problem, results) {
+			document.getElementById('problemTitle').innerText = `Results for Problem: ${problem}`;
+			const resultsContainer = document.getElementById('resultsContainer');
+
+			if (results.length === 0) {
+				resultsContainer.innerHTML = `<p>No results found for this problem</p>`;
+			} else {
+				resultsContainer.innerHTML = `
+            <table>
+                <thead>
+                    <tr>
+                        <th>File Name</th>
+                        <th>Functions</th>
+                        <th>Classes</th>
+                        <th>Variables</th>
+                        <th>Equal Compiler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${results.map(result => {
+					// Determine the color based on the spec match
+					const functionMatchClass = result.specProgrammers.checkSpec.functions?.allMatch ? 'match' : 'mismatch';
+					const variablesMatchClass = result.specProgrammers.checkSpec.variables?.allMatch ? 'match' : 'mismatch';
+					const classMatchClass = result.specProgrammers.checkSpec.classes?.allMatch ? 'match' : 'mismatch';
+
+					return `
                             <tr>
                                 <td>${result.fileName}</td>
-                                <td>${result.specProgrammers.functions ? result.specProgrammers.functions.join(', ') : 'N/A'}</td>
-                                <td>${result.specProgrammers.classes ? result.specProgrammers.classes.join(', ') : 'N/A'}</td>
-                                <td>${result.specProgrammers.variables ? result.specProgrammers.variables.join(', ') : 'N/A'}</td>
-                                <td>
-                                    ${result.specProgrammers.points ? `
-                                        Function Score: ${result.specProgrammers.points.functionPoints || 'N/A'}<br>
-                                        Class Score: ${result.specProgrammers.points.classPoints || 'N/A'}<br>
-                                        Variable Score: ${result.specProgrammers.points.variablePoints || 'N/A'}<br>
-                                        Equal Compile Score: ${result.specProgrammers.points.equalCompilePoints || 'N/A'}<br>
-                                        Total Score: ${result.specProgrammers.points.totalPoints || 'N/A'}
-                                    ` : 'N/A'}
-                                </td>
-                                <td>${result.percentageActuals || 'N/A'}%</td>
+                                <td class="${functionMatchClass}">${result.specProgrammers.functions ? result.specProgrammers.functions.join(', ') : 'N/A'}</td>
+                                <td class="${classMatchClass}">${result.specProgrammers.classes ? result.specProgrammers.classes.join(', ') : 'N/A'}</td>
+                                <td class="${variablesMatchClass}">${result.specProgrammers.variables ? result.specProgrammers.variables.join(', ') : 'N/A'}</td>
                             </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
+                        `;
+				}).join('')}
+                </tbody>
+            </table>
+        `;
+			}
 		}
-	}
 
-	async function fetchSpec() {
+		async function fetchSpec() {
 		const problem = document.getElementById('problemInput').value;
 		if (!problem) {
 			alert('Please enter a problem name.');
@@ -214,4 +276,5 @@
 	}
 </script>
 </body>
+
 </html>
