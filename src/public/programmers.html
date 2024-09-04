@@ -110,21 +110,14 @@
 <script>
   document.getElementById('uploadForm').addEventListener('submit', async (event) => {
     event.preventDefault();
-    const fileInput = document.getElementById('file');
-    const file = fileInput.files[0];
-
-    if (file && file.type !== 'application/javascript' && file.name.split('.').pop() !== 'js') {
-      alert('Only JavaScript files are allowed!');
-      return;
-    }
 
     const formData = new FormData(event.target);
     try {
-      const response = await fetch(event.target.action, {
+      const uploadResponse = await fetch(event.target.action, {
         method: 'POST',
         body: formData
       });
-      const result = await response.json();
+      const result = await uploadResponse.json();
       console.log('Upload result:', result);
       alert('File uploaded successfully');
     } catch (error) {
@@ -132,7 +125,9 @@
       alert('Error uploading file');
     }
   });
+
 </script>
+
 </body>
 
 </html>

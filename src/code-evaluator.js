@@ -10,15 +10,12 @@ class CodeEvaluator {
 		this.filePathProgrammers = filePathProgrammers;
 		this.evaluationResult = null;
 	}
-	
 	async evaluateProgrammer() {
 		return this.evaluate(this.filePathProgrammers, this.filePathPenilai, false);
 	}
-	
 	async evaluatePenilai() {
 		return this.evaluate(this.filePathPenilai, this.filePathPenilai, true);
 	}
-	
 	async evaluate(filePathToEvaluate, referenceFilePath, isPenilai) {
 		// Ambil spesifikasi dari file spec.json
 		let specPath, specData;
@@ -81,8 +78,6 @@ class CodeEvaluator {
 		
 		return this.evaluationResult;
 	}
-	
-	// Fungsi untuk mengecek kesesuaian spesifikasi
 	checkSpecMatches(foundItems, specItems) {
 		const missingItems = specItems.filter(item => !foundItems.includes(item));
 		return {
@@ -90,7 +85,6 @@ class CodeEvaluator {
 			allMatch: missingItems.length === 0
 		};
 	}
-	
 	createSpec(result) {
 		return {
 			functions: result.functions,
@@ -101,5 +95,4 @@ class CodeEvaluator {
 		};
 	}
 }
-
 export { CodeEvaluator };

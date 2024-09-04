@@ -1,13 +1,15 @@
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
-import {fileURLToPath} from 'url';
+import { fileURLToPath } from 'url';
 import multer from 'multer';
 import os from 'os';
-import {CodeEvaluator} from './code-evaluator.js';
-import {Config} from './config.js';
+import { CodeEvaluator } from './code-evaluator.js';
+import { Config } from './config.js';
+import cors from 'cors';
 
 const app = express();
+app.use(cors());
 const port = 3000;
 
 app.use(express.json());
@@ -71,6 +73,7 @@ const evaluateProgrammers = async (problemDir, penilaiPath) => {
 	}
 	return results;
 };
+
 const evaluatePenilai = async (problem) => {
 	const problemDir = path.join(problemsDir, problem);
 	const penilaiDir = path.join(problemDir, 'penilai', 'example.js');
@@ -95,6 +98,23 @@ const evaluatePenilai = async (problem) => {
 	}
 };
 
+const deleteFolderRecursive = (folderPath) => {
+	if (fs.existsSync(folderPath)) {
+		fs.readdirSync(folderPath).forEach((file) => {
+			const currentPath = path.join(folderPath, file);
+			if (fs.lstatSync(currentPath).isDirectory()) {
+				// Hapus folder secara rekursif
+				deleteFolderRecursive(currentPath);
+			} else {
+				// Hapus file
+				fs.unlinkSync(currentPath);
+			}
+		});
+		// Hapus folder itu sendiri
+		fs.rmdirSync(folderPath);
+	}
+};
+
 const getAllProblemKeys = () => {
 	try {
 		return fs.readdirSync(problemsDir).filter(file => fs.statSync(path.join(problemsDir, file)).isDirectory());
@@ -104,9 +124,53 @@ const getAllProblemKeys = () => {
 	}
 };
 
+// Middleware untuk membatasi akses berdasarkan IP dan halaman yang diminta
+const restrictAccess = (req, res, next) => {
+	const clientIp = req.ip === '::1' ? '127.0.0.1' : req.ip;
+	const localIp = getLocalIpAddress();
+	const requestedPage = req.path;
+	
+	if (requestedPage === '/upload/programmer') {
+		// Izinkan akses ke /upload/programmer dari IP lain
+		return next();
+	}
+	
+	if (clientIp === '127.0.0.1' || clientIp === localIp) {
+		// Penilai (localhost) dapat mengakses semua halaman
+		return next();
+	} else if (requestedPage === '/programmers.html') {
+		// Programmer hanya dapat mengakses programmers.html
+		return next();
+	} else {
+		// Pengguna lain tidak diizinkan mengakses halaman lain
+		return res.status(403).json({ error: 'Access forbidden: You do not have permission to access this page.' });
+	}
+};
+
+app.use(restrictAccess);
+
+// Sajikan file statis dari folder public
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.post('/update-spec', (req, res) => {
+app.delete('/problems/:problemKey', restrictAccess, (req, res) => {
+	const { problemKey } = req.params;
+	const folderPath = path.join(problemsDir, problemKey);
+	
+	if (fs.existsSync(folderPath)) {
+		try {
+			// Hapus folder beserta isinya
+			deleteFolderRecursive(folderPath);
+			res.status(200).json({ message: `Folder for problemKey '${problemKey}' has been deleted successfully.` });
+		} catch (err) {
+			console.error('Error deleting folder:', err);
+			res.status(500).json({ error: 'Error deleting folder' });
+		}
+	} else {
+		res.status(404).json({ error: `Folder for problemKey '${problemKey}' not found.` });
+	}
+});
+
+app.post('/update-spec', restrictAccess, (req, res) => {
 	const { problem, resultPenilai } = req.body;
 	if (!problem || !resultPenilai) {
 		return res.status(400).json({ error: 'Problem and resultPenilai are required' });
@@ -123,29 +187,32 @@ app.post('/update-spec', (req, res) => {
 		res.status(500).json({ error: 'Error updating spec.json' });
 	}
 });
-app.get('/get-spec/:problem', (req, res) => {
+
+app.get('/get-spec/:problem', restrictAccess, (req, res) => {
 	const { problem } = req.params;
-	const specPath = path.join(problemsDir, problem, 'penilai', 'spec.json'); // Menggunakan nama variabel yang lebih deskriptif
+	const specPath = path.join(problemsDir, problem, 'penilai', 'spec.json');
 	
 	try {
-		if (fs.existsSync(specPath)) { // Memeriksa apakah spec.json ada
-			const specData = fs.readFileSync(specPath, 'utf8'); // Membaca konten spec.json
-			res.status(200).json(JSON.parse(specData)); // Mengirimkan data dalam bentuk JSON
+		if (fs.existsSync(specPath)) {
+			const specData = fs.readFileSync(specPath, 'utf8');
+			res.status(200).json(JSON.parse(specData));
 		} else {
-			console.warn(`spec.json not found for problem ${problem}`); // Memberikan peringatan jika spec.json tidak ditemukan
+			console.warn(`spec.json not found for problem ${problem}`);
 			res.status(404).json({ error: `spec.json not found for problem ${problem}` });
 		}
 	} catch (err) {
-		console.error(`Error reading spec.json for problem ${problem}:`, err); // Menangani kesalahan saat membaca file
+		console.error(`Error reading spec.json for problem ${problem}:`, err);
 		res.status(500).json({ error: `Error reading spec.json for problem ${problem}` });
 	}
 });
-app.get('/penilai/:problem', async (req, res) => {
+
+app.get('/penilai/:problem', restrictAccess, async (req, res) => {
 	const { problem } = req.params;
 	const results = await evaluatePenilai(problem);
 	res.json(results);
 });
-app.get('/problems', (req, res) => {
+
+app.get('/problems', restrictAccess, (req, res) => {
 	const problemKeys = getAllProblemKeys();
 	if (problemKeys.length > 0) {
 		res.json(problemKeys);
@@ -153,7 +220,8 @@ app.get('/problems', (req, res) => {
 		res.status(404).json({ error: 'No problems found' });
 	}
 });
-app.post('/upload/penilai', penilaiUpload.single('file'), (req, res) => {
+
+app.post('/upload/penilai', restrictAccess, penilaiUpload.single('file'), (req, res) => {
 	const { file } = req;
 	if (!file) {
 		return res.status(400).json({ error: 'Please upload a file' });
@@ -162,10 +230,13 @@ app.post('/upload/penilai', penilaiUpload.single('file'), (req, res) => {
 	const programmersDir = path.join(problemsDir, problemKey, 'programmers');
 	fs.mkdirSync(programmersDir, { recursive: true });
 	
-	// Pastikan untuk mengembalikan respons setelah file berhasil diunggah
 	res.json({ message: 'File uploaded successfully', file, problemKey });
 });
-app.post('/upload/programmer', programmerUpload.single('file'), async (req, res) => {
+
+app.post('/upload/programmer', (req, res, next) => {
+	res.header('Access-Control-Allow-Origin', '*');
+	next();
+}, programmerUpload.single('file'), async (req, res) => {
 	const { problem } = req.body;
 	const file = req.file;
 	if (!file) {
@@ -188,20 +259,8 @@ app.post('/upload/programmer', programmerUpload.single('file'), async (req, res)
 		}
 	});
 });
-app.post('/config', (req, res) => {
-	const newConfig = req.body;
-	setConfig(newConfig);
-	const updatedConfig = getConfig(); // Mengambil konfigurasi terbaru setelah diperbarui
-	const totalPoints = parseInt(updatedConfig.POINT_FUNCTION) + parseInt(updatedConfig.POINT_CLASS) + parseInt(updatedConfig.POINT_VARIABLES) + parseInt(updatedConfig.POINT_EQUAL_COMPILE); // Menghitung total poin
-	res.json({
-		message: 'Configuration updated successfully',
-		newConfig: updatedConfig,
-		totalPoints: totalPoints
-	});
-});
-app.get('/config', (req, res) => {
-	res.json(getConfig());
-});
+
+
 const getLocalIpAddress = () => {
 	const interfaces = os.networkInterfaces();
 	for (const interfaceName of Object.keys(interfaces)) {
@@ -213,7 +272,9 @@ const getLocalIpAddress = () => {
 	}
 	return '127.0.0.1';
 };
+
 const localIp = getLocalIpAddress();
-app.listen(port, () => {
-	console.log(`Server is running at http://${localIp}:${port}`);
+app.listen(port, '0.0.0.0',() => {
+	console.log(`Server Is Running At Address = http://localhost:${port}/penilai.html`);
+	console.log(`Acces Insert Answer With Address = http://${localIp}:${port}/programmers.html`);
 });
