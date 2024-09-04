@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Halaman Penilai</title>
     <style>
+        /* Styles remain unchanged */
         body {
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
@@ -93,10 +94,28 @@
             margin-bottom: 5px;
             cursor: pointer;
             transition: background-color 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         #problemContainer li:hover {
             background-color: #e9e9e9;
+        }
+
+        .delete-btn {
+            background-color: #000000;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-left: 10px;
+        }
+
+        .delete-btn:hover {
+            background-color: #000000;
         }
 
         #problemContainer p {
@@ -168,6 +187,7 @@
 			const result = await response.json();
 			console.log('Upload result:', result);
 			alert('File uploaded successfully');
+			fetchProblems(); // Refresh the problem list after upload
 		} catch (error) {
 			console.error('Error uploading file:', error);
 			alert('Error uploading file');
@@ -192,9 +212,32 @@
 			problemContainer.innerHTML = `
                     <h2>Available Problems</h2>
                     <ul>
-                        ${problems.map(problem => `<li onclick="location.href='/problem.html?problem=${problem}'">${problem}</li>`).join('')}
+                        ${problems.map(problem => `
+                            <li>
+                                <span onclick="location.href='/problem.html?problem=${problem}'">${problem}</span>
+                                <button class="delete-btn" onclick="deleteProblem('${problem}')">Delete</button>
+                            </li>
+                        `).join('')}
                     </ul>
                 `;
+		}
+	}
+
+	async function deleteProblem(problemKey) {
+		if (confirm(`Are you sure you want to delete problem: ${problemKey}?`)) {
+			try {
+				const response = await fetch(`/problems/${problemKey}`, { method: 'DELETE' });
+				const result = await response.json();
+				if (response.ok) {
+					alert(result.message);
+					await fetchProblems(); // Refresh the list after deletion
+				} else {
+					alert(result.error);
+				}
+			} catch (error) {
+				console.error('Error deleting problem:', error);
+				alert('Error deleting problem');
+			}
 		}
 	}
 
