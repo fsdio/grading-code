@@ -43,54 +43,27 @@ class CodeEvaluator {
 						functions: [],
 						classes: [],
 						variables: [],
-						equalCompile: false,
-						checkSpec: []
+						equalCompile: false
 					};
 				}
 			}
 		}
 
-		// Cek spesifikasi dengan spec.json
-		let checkSpec;
-		if (isPenilai) {
-			checkSpec = {
-				functions: this.checkSpecMatches(functionNames, functionNames),
-				classes: this.checkSpecMatches(classNames, functionNames),
-				variables: this.checkSpecMatches(variableNames, functionNames)
-			};
-		} else {
-			checkSpec = {
-				functions: this.checkSpecMatches(functionNames, specData.functions),
-				classes: this.checkSpecMatches(classNames, specData.classes),
-				variables: this.checkSpecMatches(variableNames, specData.variables)
-			};
-		}
-
-		// Hasil evaluasi
 		this.evaluationResult = {
 			functions: functionNames,
 			classes: classNames,
 			variables: variableNames,
-			equalCompile: compileResult.status,
-			checkSpec: checkSpec
+			equalCompile: compileResult.status
 		};
 
 		return this.evaluationResult;
-	}
-	checkSpecMatches(foundItems, specItems) {
-		const missingItems = specItems.filter(item => !foundItems.includes(item));
-		return {
-			missingItems,
-			allMatch: missingItems.length === 0
-		};
 	}
 	createSpec(result) {
 		return {
 			functions: result.functions,
 			classes: result.classes,
 			variables: result.variables,
-			equalCompile: result.equalCompile,
-			checkSpec: result.checkSpec
+			equalCompile: result.equalCompile
 		};
 	}
 }

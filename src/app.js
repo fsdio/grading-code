@@ -170,24 +170,6 @@ app.delete('/problems/:problemKey', restrictAccess, (req, res) => {
 	}
 });
 
-app.post('/update-spec', restrictAccess, (req, res) => {
-	const { problem, resultPenilai } = req.body;
-	if (!problem || !resultPenilai) {
-		return res.status(400).json({ error: 'Problem and resultPenilai are required' });
-	}
-
-	const problemDir = path.join(problemsDir, problem);
-	const specPath = path.join(problemDir, 'penilai', 'spec.json');
-
-	try {
-		fs.writeFileSync(specPath, JSON.stringify(resultPenilai, null, 2), 'utf8');
-		res.status(200).json({ message: 'spec.json updated successfully' });
-	} catch (err) {
-		console.error('Error updating spec.json:', err);
-		res.status(500).json({ error: 'Error updating spec.json' });
-	}
-});
-
 app.get('/get-spec/:problem', restrictAccess, (req, res) => {
 	const { problem } = req.params;
 	const specPath = path.join(problemsDir, problem, 'penilai', 'spec.json');
@@ -259,7 +241,6 @@ app.post('/upload/programmer', (req, res, next) => {
 		}
 	});
 });
-
 
 const getLocalIpAddress = () => {
 	const interfaces = os.networkInterfaces();
