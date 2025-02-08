@@ -53,7 +53,8 @@
             margin-top: 20px;
         }
 
-        th, td {
+        th,
+        td {
             padding: 12px;
             border: 1px solid #ddd;
             text-align: left;
@@ -129,7 +130,8 @@
                 font-size: 0.9em;
             }
 
-            th, td {
+            th,
+            td {
                 padding: 8px;
                 font-size: 0.9em;
             }
@@ -142,49 +144,49 @@
 </head>
 
 <body>
-<div class="container">
-    <h1 id="problemTitle">Problem Results and Spec Management</h1>
+    <div class="container">
+        <h1 id="problemTitle">Hasil Peninjauan </h1>
 
-    <!-- Section to manage spec.json -->
-    <div>
-        <h2>Manage spec.json</h2>
-        <div class="form-group" hidden>
-            <label for="problemInput">Problem Name:</label>
-            <input type="text" id="problemInput" placeholder="Enter problem name">
+        <!-- Section to manage spec.json -->
+        <div>
+            <h2>Mengubah spec.json</h2>
+            <div class="form-group" hidden>
+                <label for="problemInput">Problem Name:</label>
+                <input type="text" id="problemInput" placeholder="Enter problem name">
+            </div>
+            <div class="form-group">
+                <label for="specTextarea">SPESIFIKASI SAAT INI</label>
+                <textarea id="specTextarea" rows="10" placeholder="spec.json content will appear here..."></textarea>
+            </div>
+            <button onclick="fetchSpec()" hidden>Fetch spec.json</button>
+            <button onclick="updateSpec()">Update Spesifikasi</button>
         </div>
-        <div class="form-group">
-            <label for="specTextarea">spec.json Content:</label>
-            <textarea id="specTextarea" rows="10" placeholder="spec.json content will appear here..."></textarea>
-        </div>
-        <button onclick="fetchSpec()" hidden>Fetch spec.json</button>
-        <button onclick="updateSpec()">Update spec.json</button>
+
+        <!-- Section to display results -->
+        <div id="resultsContainer"></div>
     </div>
 
-    <!-- Section to display results -->
-    <div id="resultsContainer"></div>
-</div>
+    <script>
+        async function fetchResults(problem) {
+            try {
+                const response = await fetch(`/penilai/${problem}`);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const results = await response.json();
+                displayResults(problem, results);
+            } catch (error) {
+                console.error('Error fetching results:', error);
+                document.getElementById('resultsContainer').innerHTML = `<p>Error fetching results: ${error.message}</p>`;
+            }
+        }
 
-<script>
-	async function fetchResults(problem) {
-		try {
-			const response = await fetch(`/penilai/${problem}`);
-			if (!response.ok) throw new Error('Network response was not ok');
-			const results = await response.json();
-			displayResults(problem, results);
-		} catch (error) {
-			console.error('Error fetching results:', error);
-			document.getElementById('resultsContainer').innerHTML = `<p>Error fetching results: ${error.message}</p>`;
-		}
-	}
+        function displayResults(problem, results) {
+            document.getElementById('problemTitle').innerText = `Results for Problem: ${problem}`;
+            const resultsContainer = document.getElementById('resultsContainer');
 
-		function displayResults(problem, results) {
-			document.getElementById('problemTitle').innerText = `Results for Problem: ${problem}`;
-			const resultsContainer = document.getElementById('resultsContainer');
-
-			if (results.length === 0) {
-				resultsContainer.innerHTML = `<p>No results found for this problem</p>`;
-			} else {
-				resultsContainer.innerHTML = `
+            if (results.length === 0) {
+                resultsContainer.innerHTML = `<p>No results found for this problem</p>`;
+            } else {
+                resultsContainer.innerHTML = `
             <table>
                 <thead>
                     <tr>
@@ -197,12 +199,12 @@
                 </thead>
                 <tbody>
                     ${results.map(result => {
-					// Determine the color based on the spec match
-					const functionMatchClass = result.specProgrammers.checkSpec.functions?.allMatch ? 'match' : 'mismatch';
-					const variablesMatchClass = result.specProgrammers.checkSpec.variables?.allMatch ? 'match' : 'mismatch';
-					const classMatchClass = result.specProgrammers.checkSpec.classes?.allMatch ? 'match' : 'mismatch';
+                    // Determine the color based on the spec match
+                    const functionMatchClass = result.specProgrammers.checkSpec.functions?.allMatch ? 'match' : 'mismatch';
+                    const variablesMatchClass = result.specProgrammers.checkSpec.variables?.allMatch ? 'match' : 'mismatch';
+                    const classMatchClass = result.specProgrammers.checkSpec.classes?.allMatch ? 'match' : 'mismatch';
 
-					return `
+                    return `
                             <tr>
                                 <td>${result.fileName}</td>
                                 <td class="${functionMatchClass}">${result.specProgrammers.functions ? result.specProgrammers.functions.join(', ') : 'N/A'}</td>
@@ -211,79 +213,79 @@
                                 <td>${result.specProgrammers.equalCompile ? 'BERHASIL' : 'GAGAL'}</td>
                             </tr>
                         `;
-				}).join('')}
+                }).join('')}
                 </tbody>
             </table>
         `;
-			}
-		}
+            }
+        }
 
-		async function fetchSpec() {
-			const problem = document.getElementById('problemInput').value;
-			if (!problem) {
-				alert('Please enter a problem name.');
-				return;
-			}
+        async function fetchSpec() {
+            const problem = document.getElementById('problemInput').value;
+            if (!problem) {
+                alert('Please enter a problem name.');
+                return;
+            }
 
-			try {
-				const response = await fetch(`/get-spec/${problem}`);
-				if (response.ok) {
-					const spec = await response.json();
-					document.getElementById('specTextarea').value = JSON.stringify(spec, null, 2);
-				} else {
-					document.getElementById('specTextarea').value = 'spec.json not found';
-				}
-			} catch (error) {
-				console.error('Error fetching spec.json:', error);
-				document.getElementById('specTextarea').value = 'Error fetching spec.json';
-			}
-		}
+            try {
+                const response = await fetch(`/get-spec/${problem}`);
+                if (response.ok) {
+                    const spec = await response.json();
+                    document.getElementById('specTextarea').value = JSON.stringify(spec, null, 2);
+                } else {
+                    document.getElementById('specTextarea').value = 'spec.json not found';
+                }
+            } catch (error) {
+                console.error('Error fetching spec.json:', error);
+                document.getElementById('specTextarea').value = 'Error fetching spec.json';
+            }
+        }
 
-		async function updateSpec() {
-			const problem = document.getElementById('problemInput').value;
-			const specContent = document.getElementById('specTextarea').value;
-			if (!problem || !specContent) {
-				alert('Please enter both problem name and spec content.');
-				return;
-			}
+        async function updateSpec() {
+            const problem = document.getElementById('problemInput').value;
+            const specContent = document.getElementById('specTextarea').value;
+            if (!problem || !specContent) {
+                alert('Please enter both problem name and spec content.');
+                return;
+            }
 
-			let parsedSpec;
-			try {
-				parsedSpec = JSON.parse(specContent);
-			} catch (error) {
-				alert('Invalid JSON format. Please check the spec content.');
-				console.error('Invalid JSON format:', error);
-				return;
-			}
+            let parsedSpec;
+            try {
+                parsedSpec = JSON.parse(specContent);
+            } catch (error) {
+                alert('Invalid JSON format. Please check the spec content.');
+                console.error('Invalid JSON format:', error);
+                return;
+            }
 
-			try {
-				const response = await fetch('/update-spec', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify({ problem, resultPenilai: parsedSpec }),
-				});
+            try {
+                const response = await fetch('/update-spec', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ problem, resultPenilai: parsedSpec }),
+                });
 
-				if (response.ok) {
-					alert('spec.json updated successfully');
-				} else {
-					alert('Failed to update spec.json');
-				}
-			} catch (error) {
-				console.error('Error updating spec.json:', error);
-				alert('Error updating spec.json');
-			}
-		}
-		// Fetch results on page load if a problem is specified in the URL
-	const urlParams = new URLSearchParams(window.location.search);
-	const problem = urlParams.get('problem');
-	if (problem) {
-		document.getElementById('problemInput').value = problem;
-		fetchResults(problem);
-		fetchSpec();
-	}
-</script>
+                if (response.ok) {
+                    alert('spec.json updated successfully');
+                } else {
+                    alert('Failed to update spec.json');
+                }
+            } catch (error) {
+                console.error('Error updating spec.json:', error);
+                alert('Error updating spec.json');
+            }
+        }
+        // Fetch results on page load if a problem is specified in the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const problem = urlParams.get('problem');
+        if (problem) {
+            document.getElementById('problemInput').value = problem;
+            fetchResults(problem);
+            fetchSpec();
+        }
+    </script>
 </body>
 
 </html>

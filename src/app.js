@@ -51,15 +51,15 @@ const evaluateProgrammers = async (problemDir, penilaiPath) => {
 	try {
 		const files = await fs.promises.readdir(programmersDir);
 		const jsFiles = files.filter(file => path.extname(file) === '.js');
-		
+
 		for (const file of jsFiles) {
 			try {
 				const programmerPath = path.join(programmersDir, file);
 				const evaluatorProgrammer = new CodeEvaluator(penilaiPath, programmerPath);
-				
+
 				const resultProgrammers = await evaluatorProgrammer.evaluateProgrammer();
 				const specProgrammers = evaluatorProgrammer.createSpec(resultProgrammers);
-				
+
 				results.push({
 					fileName: file,
 					specProgrammers,
@@ -78,7 +78,7 @@ const evaluatePenilai = async (problem) => {
 	const problemDir = path.join(problemsDir, problem);
 	const penilaiDir = path.join(problemDir, 'penilai', 'example.js');
 	const specPath = path.join(problemDir, 'penilai', 'spec.json');
-	
+
 	try {
 		// Buat file spec.json jika belum ada
 		if (!fs.existsSync(specPath)) {
@@ -91,7 +91,7 @@ const evaluatePenilai = async (problem) => {
 		} else {
 			console.log(`File '${specPath}' sudah ada.`);
 		}
-		
+
 		return await evaluateProgrammers(problemDir, penilaiDir);
 	} catch (err) {
 		console.error('Error evaluating penilai:', err);
@@ -129,12 +129,12 @@ const restrictAccess = (req, res, next) => {
 	const clientIp = req.ip === '::1' ? '127.0.0.1' : req.ip;
 	const localIp = getLocalIpAddress();
 	const requestedPage = req.path;
-	
+
 	if (requestedPage === '/upload/programmer') {
 		// Izinkan akses ke /upload/programmer dari IP lain
 		return next();
 	}
-	
+
 	if (clientIp === '127.0.0.1' || clientIp === localIp) {
 		// Penilai (localhost) dapat mengakses semua halaman
 		return next();
@@ -155,7 +155,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.delete('/problems/:problemKey', restrictAccess, (req, res) => {
 	const { problemKey } = req.params;
 	const folderPath = path.join(problemsDir, problemKey);
-	
+
 	if (fs.existsSync(folderPath)) {
 		try {
 			// Hapus folder beserta isinya
@@ -175,10 +175,10 @@ app.post('/update-spec', restrictAccess, (req, res) => {
 	if (!problem || !resultPenilai) {
 		return res.status(400).json({ error: 'Problem and resultPenilai are required' });
 	}
-	
+
 	const problemDir = path.join(problemsDir, problem);
 	const specPath = path.join(problemDir, 'penilai', 'spec.json');
-	
+
 	try {
 		fs.writeFileSync(specPath, JSON.stringify(resultPenilai, null, 2), 'utf8');
 		res.status(200).json({ message: 'spec.json updated successfully' });
@@ -191,7 +191,7 @@ app.post('/update-spec', restrictAccess, (req, res) => {
 app.get('/get-spec/:problem', restrictAccess, (req, res) => {
 	const { problem } = req.params;
 	const specPath = path.join(problemsDir, problem, 'penilai', 'spec.json');
-	
+
 	try {
 		if (fs.existsSync(specPath)) {
 			const specData = fs.readFileSync(specPath, 'utf8');
@@ -229,7 +229,7 @@ app.post('/upload/penilai', restrictAccess, penilaiUpload.single('file'), (req, 
 	const problemKey = req.problemKey;
 	const programmersDir = path.join(problemsDir, problemKey, 'programmers');
 	fs.mkdirSync(programmersDir, { recursive: true });
-	
+
 	res.json({ message: 'File uploaded successfully', file, problemKey });
 });
 
@@ -274,7 +274,7 @@ const getLocalIpAddress = () => {
 };
 
 const localIp = getLocalIpAddress();
-app.listen(port, '0.0.0.0',() => {
-	console.log(`Server Is Running At Address = http://localhost:${port}/penilai.html`);
+app.listen(port, '0.0.0.0', () => {
+	console.log(`Server Is Running At Address = http://localhost:${port}/peninjau.html`);
 	console.log(`Acces Insert Answer With Address = http://${localIp}:${port}/programmers.html`);
 });

@@ -19,18 +19,18 @@ class CodeEvaluator {
 	async evaluate(filePathToEvaluate, referenceFilePath, isPenilai) {
 		// Ambil spesifikasi dari file spec.json
 		let specPath, specData;
-		if(isPenilai){
+		if (isPenilai) {
 			specData = this.analyzer.getSpecificationsFromCode(referenceFilePath);
-		}else {
+		} else {
 			specPath = path.join(path.dirname(this.filePathPenilai), 'spec.json');
 			specData = JSON.parse(await fs.promises.readFile(specPath, 'utf-8'));
 		}
-		
+
 		const spec = this.analyzer.getSpecificationsFromCode(filePathToEvaluate);
 		const compileResult = this.analyzer.compareFileOutputs(referenceFilePath, filePathToEvaluate);
-		
+
 		const { functionNames = [], classNames = [], variableNames = [] } = spec;
-		
+
 		// Cek kesamaan dengan kode programmer lain
 		const files = await fs.promises.readdir(Config.programmersDir(path.dirname(filePathToEvaluate)));
 		for (const file of files) {
@@ -49,10 +49,10 @@ class CodeEvaluator {
 				}
 			}
 		}
-		
+
 		// Cek spesifikasi dengan spec.json
 		let checkSpec;
-		if(isPenilai){
+		if (isPenilai) {
 			checkSpec = {
 				functions: this.checkSpecMatches(functionNames, functionNames),
 				classes: this.checkSpecMatches(classNames, functionNames),
@@ -65,8 +65,7 @@ class CodeEvaluator {
 				variables: this.checkSpecMatches(variableNames, specData.variables)
 			};
 		}
-		
-		
+
 		// Hasil evaluasi
 		this.evaluationResult = {
 			functions: functionNames,
@@ -75,7 +74,7 @@ class CodeEvaluator {
 			equalCompile: compileResult.status,
 			checkSpec: checkSpec
 		};
-		
+
 		return this.evaluationResult;
 	}
 	checkSpecMatches(foundItems, specItems) {

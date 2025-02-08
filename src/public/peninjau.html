@@ -159,7 +159,7 @@
 
 <body>
 <div class="container">
-    <h1>Upload Penilai File</h1>
+    <h1>Upload Peninjau File</h1>
     <form id="uploadForm" action="/upload/penilai" method="POST" enctype="multipart/form-data">
         <input type="file" name="file" id="file" accept=".js" required>
         <button type="submit">Upload File</button>
@@ -210,7 +210,7 @@
 			problemContainer.innerHTML = `<p>Not found problems data</p>`;
 		} else {
 			problemContainer.innerHTML = `
-                    <h2>Available Problems</h2>
+                    <h2>Case Programming</h2>
                     <ul>
                         ${problems.map(problem => `
                             <li>
